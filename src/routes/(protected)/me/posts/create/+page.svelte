@@ -64,7 +64,6 @@
 	// }
 </script>
 
-<main class="mx-6 my-8 w-[100vw]">
 	<div class="mb-2 flex w-[50vw] flex-col gap-3">
 		<Card.Header><h1 class="text-4xl font-semibold">Create a blog post</h1></Card.Header>
 		<Card.Description class="ml-8"
@@ -137,7 +136,6 @@
 			</form>
 		</section>
 	</div>
-</main>
 <!-- <form method="POST" onsubmit={beforeSubmit}>
 	<div class="stack">
 		<label>
