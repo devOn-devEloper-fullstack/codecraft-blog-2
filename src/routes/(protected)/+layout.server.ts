@@ -9,5 +9,5 @@ export const load: LayoutServerLoad = async ({ request }) => {
 
 	if (!session?.user) throw redirect(302, '/auth/sign-in');
 
-	return {};
+	return { session };
 };

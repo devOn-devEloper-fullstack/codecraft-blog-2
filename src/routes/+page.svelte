@@ -1,42 +1,16 @@
 <script lang="ts">
-	let alphabet = $state(['ABC', 'DEF', 'GHI']);
-	let value = $state('');
 
-	function addTag(input: string) {
-		alphabet.push(input);
-		value = '';
-	}
-
-	function removeTag(input: string) {
-		alphabet = alphabet.filter((t) => t !== input);
-	}
-
-	function getInnerText(node: HTMLElement) {
-		return node.innerText;
-	}
-
-	function getSibling(node: EventTarget | null) {
-		//@ts-ignore
-		return node.previousElementSibling;
-	}
 </script>
 
-<div class="my-5 flex justify-start gap-6">
-	{#each alphabet as alpha}
-		<div>
-			<span>{alpha}</span>
-			<button
-				type="button"
-				onclick={(e) => removeTag(getInnerText(getSibling(e.target)))}
-				class="rounded-full border border-gray-600 px-4">Remove Me</button
-			>
-		</div>
-	{/each}
-</div>
-<input
-	bind:value
-	class="border border-black"
-	onkeydown={(e) => e.key === 'Enter' && addTag(value)}
-/>
+<aside class="h-[100vh] w-[18%] border-r border-gray-300 p-4">
+  <h2 class="text-lg font-semibold mb-4">Sidebar</h2>
+  <nav>
+	<ul class="space-y-2">
+	  <li><a href="/" class="text-blue-500 hover:underline">Home</a></li>
+	  <li><a href="/" class="text-blue-500 hover:underline">About</a></li>
+	  <li><a href="/" class="text-blue-500 hover:underline">Services</a></li>
+	  <li><a href="/" class="text-blue-500 hover:underline">Contact</a></li>
+	</ul>
+  </nav>
 
-<button type="button" onclick={() => addTag(value)}>Add Text</button>
+</aside>
