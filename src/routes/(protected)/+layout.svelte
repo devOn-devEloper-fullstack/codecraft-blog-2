@@ -50,7 +50,7 @@
   </div>
 </nav>
 
-<section class="overflow-y-auto p-4 h-[100vh] w-[100vw] ml-10 translate-y-[60px]">
+<section class="overflow-y-auto h-[100vh] w-[100vw] ml-10 translate-y-[60px]">
 	{@render children?.()}
 </section>
 
