@@ -10,7 +10,7 @@ export async function addPost(input: PostInput) {
 			...data,
 			published: !!published,
 			// @ts-expect-error This syntax is acceptable. Do not know how to fix type error.
-			publishedAt: published ? new Date() : undefined
+			publishedAt: published ? new Date() : null
 		}
 	});
 }

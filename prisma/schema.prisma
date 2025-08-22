@@ -76,7 +76,7 @@ model Posts {
   contentJson Json?
   tags  String[]
   published Boolean @default(false)
-  publishedAt DateTime
+  publishedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

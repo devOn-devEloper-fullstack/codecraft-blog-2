@@ -1,19 +1,32 @@
 <script lang="ts">
-	let { title = $bindable(), slug = $bindable() }: { title: string; slug: string } = $props();
+	import { Input } from '$lib/components/ui/input';
+	let {
+		title = $bindable(),
+		slug = $bindable(),
+		...restProps
+	}: { title: string; slug: string } = $props();
+
+	let slugValue = $derived.by(() => {
+		return title
+			.toLowerCase()
+			.replace(/[^\w\s]+/g, '')
+			.trim()
+			.replace(/\s+/g, '-')
+			.slice(0, 96);
+	});
 
 	$effect(() => {
-		if (!slug && title) {
-			slug = title
-				.toLowerCase()
-				.replace(/[^a-z0-9\s-]/g, '')
-				.trim()
-				.replace(/\s+/g, '-')
-				.slice(0, 96);
-		}
+		slug = slugValue;
 	});
+
+	// $effect(() => {
+	// 	slug = title
+	// 		.toLowerCase()
+	// 		.replace(/[^\w\s]+/g, '') //removes special characters
+	// 		.trim() // trims whitespace on string exterior
+	// 		.replace(/\s+/g, '-') // converts whitespace to hypens
+	// 		.slice(0, 96); // restricts the output to 96 characters
+	// });
 </script>
 
-<label>
-	<span>Slug</span>
-	<input name="slug" bind:value={slug} required />
-</label>
+<Input bind:value={slugValue} {...restProps} placeholder="Enter a unique slug for your post" />
