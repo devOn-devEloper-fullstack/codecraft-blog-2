@@ -65,6 +65,7 @@
 		bind:value={inputValue}
 		onkeydown={(e) => e.key === 'Enter' && addTag(inputValue, disabled)}
 		placeholder="Start typing to add tags"
+		name="tag-input"
 	/>
 	<button
 		type="button"

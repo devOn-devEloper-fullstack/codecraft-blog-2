@@ -19,8 +19,10 @@ export const load: PageServerLoad = async ({ request }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	createPost: async ({ request }) => {
 		// if (!locals.user) throw redirect(302, '/auth/sign-in');
+
+		console.log('Server Action Initialized. ✅');
 		const session = await auth.api.getSession({
 			headers: request.headers
 		});
@@ -29,22 +31,42 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(formSchema));
 
 		if (!form.valid) {
+			console.log(
+				'Form is not valid. Retry your submission with inputs that match the schema file.',
+				'\nThe following data was submitted:',
+				'\n\x1b[31mPost Title:\x1b[0m',
+				form.data.title,
+				'\n\x1b[31mPost Slug:\x1b[0m',
+				form.data.slug,
+				'\n\x1b[31mPost Tags:\x1b[0m',
+				form.data.tags,
+				'\n\x1b[31mPost Content:\x1b[0m',
+				form.data.contentHtml
+			);
 			return fail(400, { form });
 		}
 
 		const postTitle = form.data.title;
 		const slug = form.data.slug;
 		const contentHtml = form.data.contentHtml;
-		const contentJson = form.data.contentJson
-			? JSON.parse(String(form.data.contentJson))
-			: undefined;
-		const excerpt = form.data.excerpt;
+		// const excerpt = form.data.excerpt;
 		const tags = form.data.tags;
 
 		if (!postTitle || !slug || !contentHtml) {
+			console.log('Missing required fields ⛔');
+			console.log(
+				'\n\x1b[31mPost Title:\x1b[0m',
+				form.data.title,
+				'\n\x1b[31mPost Slug:\x1b[0m',
+				form.data.slug,
+				'\n\x1b[31mPost Tags:\x1b[0m',
+				form.data.tags,
+				'\n\x1b[31mPost Content:\x1b[0m',
+				form.data.contentHtml
+			);
 			return fail(400, {
 				message: 'Missing required fields',
-				values: { postTitle, slug, excerpt, tags }
+				values: { postTitle, slug, tags }
 			});
 		}
 
@@ -53,11 +75,11 @@ export const actions: Actions = {
 				postTitle,
 				slug,
 				contentHtml,
-				contentJson,
-				excerpt: excerpt || undefined,
+				excerpt: undefined,
 				tags,
 				published: false
 			});
+			console.log('SUCCESS ✅ POST ADDED TO DATABASE');
 		} catch (error) {
 			console.log('Unexpected error occurred during post creation', error);
 			return setError(form, 'Unexpected error');

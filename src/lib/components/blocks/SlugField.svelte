@@ -29,4 +29,9 @@
 	// });
 </script>
 
-<Input bind:value={slugValue} {...restProps} placeholder="Enter a unique slug for your post" />
+<Input
+	bind:value={slugValue}
+	{...restProps}
+	placeholder="Enter a unique slug for your post"
+	name="slug-input"
+/>
