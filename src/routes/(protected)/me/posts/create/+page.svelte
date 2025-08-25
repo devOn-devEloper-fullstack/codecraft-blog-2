@@ -12,6 +12,7 @@
 	import Editor from '@tinymce/tinymce-svelte';
 	import { formSchema } from './schema';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
+	import { Modal } from 'flowbite-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -75,6 +76,11 @@
 
 		// console.log(title.value, slug.value, tags.value);
 	}
+
+	let formModal = $state(false);
+	let error = $state('');
+
+	let selectionModal = $state(false);
 
 	// }
 </script>
@@ -146,11 +152,112 @@
 					<Form.FieldErrors />
 				</Form.Field>
 			</div>
+			<div class="mb-4 ml-6 flex flex-col space-y-2">
+				<span class="text-xl font-semibold">Images:</span>
+				<button
+					type="button"
+					class="w-fit rounded-md bg-[var(--color-primary)] px-4 py-2 text-white"
+					onclick={() => (formModal = true)}>Add Images</button
+				>
+				<button
+					type="button"
+					class="w-fit rounded-md border border-[var(--color-primary)] px-4 py-2 text-black"
+					onclick={() => (selectionModal = true)}
+				>
+					Select from Gallery
+				</button>
+			</div>
+			<Modal form bind:open={formModal} class="h-[65vh] w-[30vw] rounded-xl">
+				<div class="flex flex-row justify-between">
+					<form action="?/uploadImage" method="POST" class="flex flex-col space-y-6">
+						<h3 class="text-3xl font-bold text-black">Add a Post Image</h3>
+						<p>
+							By clicking the add button below, your post will be saved so your image can be
+							uploaded. Saving your post will not result in the post being posted to the platform.
+						</p>
+						<label class="flex flex-col space-y-2" for="image">
+							<span class="text-xl font-semibold text-black"> Select an image file </span>
+							<input
+								type="file"
+								id="image"
+								name="image"
+								class="w-[55%] rounded-full border border-black px-4 py-2 text-black file:mr-4 file:rounded-full file:bg-[var(--color-primary)] file:px-3 file:py-1 file:text-white"
+								placeholder="Select an Image"
+								accept="image/*"
+								multiple
+								required
+							/>
+						</label>
+						<label class="flex flex-col space-y-2" for="placeholder">
+							<span class="text-xl font-semibold text-black"> Placeholder </span>
+							<p>
+								A placeholder is text that will render in place of your image while the content is
+								being loaded. The provided placeholder should be informative, inclusive, and
+								semantic.
+							</p>
+							<input
+								type="text"
+								id="placeholder"
+								name="placeholder"
+								class="w-[55%] rounded-full border border-black px-2 py-2 text-black"
+								placeholder="Enter your placeholder text"
+							/>
+						</label>
+						<label class="flex flex-col space-y-2" for="alt">
+							<span class="text-xl font-semibold text-black"> Alternative Text </span>
+							<p>Alternative Text is an accessible way to describe an image for a screen reader.</p>
+							<input
+								type="text"
+								id="alt"
+								name="alt"
+								class="w-[55%] rounded-full border border-black px-2 py-2 text-black"
+								placeholder="Enter your alternative text"
+							/>
+						</label>
+						<label class="flex flex-col space-y-2" for="caption">
+							<span class="text-xl font-semibold text-black">Image Caption</span>
+							<p>
+								If you would like for your image to be accompanied with a caption, the following
+								field can be used to supply our systems with your caption.
+							</p>
+							<input
+								type="text"
+								id="caption"
+								name="caption"
+								class="w-[55%] rounded-full border border-black px-2 py-2 text-black"
+								placeholder="Enter your caption"
+							/>
+						</label>
+						<button
+							type="submit"
+							class="mt-2 w-[25%] rounded-xl bg-[var(--color-primary)] px-2 py-1 text-xl text-white"
+							>Add Image</button
+						>
+					</form>
+					<button
+						class="absolute end-5 rounded-full px-3 py-2 hover:bg-gray-300"
+						onclick={() => (formModal = false)}>✕</button
+					>
+				</div>
+			</Modal>
+			<Modal bind:open={selectionModal} class="h-[65vh] w-[30vw] rounded-xl">
+				<div class="flex flex-row justify-between">
+					<div class="flex flex-col space-y-6">
+						<h3 class="text-3xl font-bold text-black">Select an Image from the Gallery</h3>
+						e
+					</div>
+					<button
+						class="absolute end-5 rounded-full px-3 py-2 hover:bg-gray-300"
+						onclick={() => (selectionModal = false)}>✕</button
+					>
+				</div>
+			</Modal>
 
-			<!-- <RichEditor
-					bind:contentHtml={$formData.contentHtml}
-					bind:contentJson={$formData.contentJson}
-				/> -->
+			<!--
+				<RichEditor
+				bind:contentHtml={$formData.contentHtml}
+				bind:contentJson={$formData.contentJson}
+			/> -->
 			<div class="ml-6">
 				<Editor apiKey="u2bmg51o325t8jlpn4tv96tpjb0w49740u1706xg7i6i8cgu" bind:value {conf} />
 				<input bind:value={$formData.contentHtml} name="contentHtml" hidden />

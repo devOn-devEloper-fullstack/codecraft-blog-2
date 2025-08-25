@@ -1,21 +1,28 @@
-// src/lib/index.ts
+import Root from "./table.svelte";
+import Body from "./table-body.svelte";
+import Caption from "./table-caption.svelte";
+import Cell from "./table-cell.svelte";
+import Footer from "./table-footer.svelte";
+import Head from "./table-head.svelte";
+import Header from "./table-header.svelte";
+import Row from "./table-row.svelte";
 
-// Types
-export * from './types';
-export type { TableState } from './state/tableState.svelte.ts';
-
-// State (runes-based store in a .svelte.ts module)
-//@ts-expect-error will not allow files ending in .svelte.ts
-export { createTableState } from './state/tableState.svelte.ts';
-
-// Headless components
-export { default as DataTable } from './table-components/data-table.svelte';
-export { default as DataTableToolbar } from './table-components/data-table-toolbar.svelte';
-export { default as DataTableHeader } from './table-components/data-table-header.svelte';
-export { default as DataTableBody } from './table-components/data-table-body.svelte';
-export { default as DataTablePagination } from './table-components/data-table-pagination.svelte';
-export { default as DataTableEmpty } from './table-components/data-table-empty.svelte';
-
-// Row/Cell helpers (new)
-export { default as DataTableRow } from './table-components/data-table-row.svelte';
-export { default as DataTableCell } from './table-components/data-table-cell.svelte';
+export {
+	Root,
+	Body,
+	Caption,
+	Cell,
+	Footer,
+	Head,
+	Header,
+	Row,
+	//
+	Root as Table,
+	Body as TableBody,
+	Caption as TableCaption,
+	Cell as TableCell,
+	Footer as TableFooter,
+	Head as TableHead,
+	Header as TableHeader,
+	Row as TableRow,
+};

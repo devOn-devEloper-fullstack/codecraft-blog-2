@@ -69,7 +69,7 @@
 <main
 	class="grid h-[100vh] w-[100vw] grid-cols-[40px_calc(100vw-40px)] grid-rows-[60px_calc(100vh-60px)] overflow-auto"
 >
-	<aside class="fixed z-35 h-[100vh] w-[40px] bg-blue-800">
+	<aside class="fixed z-35 h-[100vh] w-[40px] bg-[var(--color-primary)]">
 		<nav class="flex h-full flex-col items-center justify-center">
 			<ul class="flex h-full flex-col items-center justify-center gap-3 space-y-2">
 				<li>
@@ -104,7 +104,7 @@
 		</nav>
 	</aside>
 	<nav
-		class="fixed z-30 flex h-[60px] w-[calc(100vw-40px)] translate-x-[40px] items-center justify-between border-b border-gray-300 bg-gray-100 px-4"
+		class="fixed z-30 flex h-[60px] w-[calc(100vw-40px)] translate-x-[40px] items-center justify-between border-b border-gray-300 bg-gray-100 px-4 dark:bg-[var(--primary-900)]"
 	>
 		<div class="flex w-full items-center justify-between space-x-4">
 			<h1 class="text-xl font-bold">CodeCraft Blog</h1>

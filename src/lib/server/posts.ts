@@ -1,8 +1,8 @@
 import { prisma } from './prisma';
 import type { Prisma } from '@prisma/client';
 
-type PostInput = Prisma.PostsCreateInput;
-
+type PostInput = Prisma.PostsCreateInput & { userId: string };
+type UserType = Prisma.UserCreateInput['id'];
 export async function addPost(input: PostInput) {
 	const { published, ...data } = input;
 	return prisma.posts.create({
@@ -26,6 +26,14 @@ export async function getPostsById(postId: string) {
 	return await prisma.posts.findUnique({
 		where: {
 			id: postId
+		}
+	});
+}
+
+export async function getAllPostsByUser(userId: UserType) {
+	return await prisma.posts.findMany({
+		where: {
+			userId: userId
 		}
 	});
 }

@@ -1,6 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 import { auth } from '$lib/auth';
 import { redirect } from '@sveltejs/kit';
+import { getAllPostsByUser } from '$lib/server/posts';
 
 export const load: LayoutServerLoad = async ({ request }) => {
 	const session = await auth.api.getSession({
@@ -9,5 +10,7 @@ export const load: LayoutServerLoad = async ({ request }) => {
 
 	if (!session?.user) throw redirect(302, '/auth/sign-in');
 
-	return { session };
+	const posts = await getAllPostsByUser(session?.user.id);
+
+	return { session, posts };
 };

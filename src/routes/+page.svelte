@@ -1,55 +1,67 @@
 <script lang="ts">
 	import {
-		createTableState,
-		DataTable,
-		DataTableToolbar,
-		DataTableHeader,
-		DataTableBody,
-		DataTablePagination
-	} from '$lib/components/ui/table';
+		AlignmentButtonGroup,
+		FontButtonGroup,
+		UndoRedoButtonGroup,
+		FormatButtonGroup,
+		LayoutButtonGroup,
+		ImageButtonGroup,
+		ListButtonGroup,
+		YoutubeButtonGroup,
+		TextEditor,
+		ToolbarRowWrapper,
+		Divider,
+		SourceButton
+	} from '@flowbite-svelte-plugins/texteditor';
+	import type { Editor } from '@tiptap/core';
+	import { Button } from 'flowbite-svelte';
+	import './styles.css';
 
-	import type { TableState } from '$lib/components/ui/table';
-	type Person = { id: number; name: string; role: string; team: string; salary: number };
+	let editorInstance = $state<Editor | null>(null);
 
-	const rows: Person[] = [
-		{ id: 1, name: 'Ada', role: 'Engineer', team: 'Core', salary: 160000 },
-		{ id: 2, name: 'Lin', role: 'Designer', team: 'Design', salary: 135000 },
-		{ id: 3, name: 'Sam', role: 'Engineer', team: 'Core', salary: 145000 },
-		{ id: 4, name: 'Ivy', role: 'PM', team: 'Growth', salary: 150000 }
-	];
+	function getEditorContent() {
+		return editorInstance?.getHTML() ?? '';
+	}
 
-	const columns = [
-		{ key: 'name', header: 'Name', sortable: true, width: '2fr' },
-		{ key: 'role', header: 'Role', sortable: true, width: '1fr' },
-		{ key: 'team', header: 'Team', sortable: true, width: '1fr' },
-		{ key: 'salary', header: 'Salary', sortable: true, width: '1fr' }
-	];
+	function setEditorContent(content: string) {
+		editorInstance?.commands.setContent(content);
+	}
 
-	let state = createTableState<Person>({
-		rows,
-		columns,
-		pagination: { pageSize: 5 }
-	}) as TableState<Person>;
+	const content = '';
 </script>
 
-<!-- <DataTable {state}
-toolbar={() => <DataTableToolbar {state}><button type="button" onclick={() => state.clearFilters()}>Clear filters</button></DataTableToolbar>}
-header={() => <DataTableHeader {state} />}
-body={() => <DataTableBody {state} />}
-pagination={() => <DataTablePagination {state} />}
-/> -->
+<svelte:head>
+	<link
+		rel="stylesheet"
+		href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/base16/google-dark.min.css"
+	/>
+</svelte:head>
 
-<DataTable {state}>
-	<DataTableToolbar {state}>
-		<button type="button" onclick={() => state.clearFilters()}>Clear filters</button>
-	</DataTableToolbar>
-	<DataTableHeader {state} />
-	<DataTableBody {state} />
-	<DataTablePagination {state} />
-</DataTable>
+<main class="h-[100vh] w-[100vw]">
+	<TextEditor bind:editor={editorInstance} {content} class="h-[500px]">
+		<ToolbarRowWrapper>
+			<FormatButtonGroup editor={editorInstance} />
+			<Divider />
+			<FontButtonGroup editor={editorInstance} />
+			<Divider />
+			<AlignmentButtonGroup editor={editorInstance} />
+		</ToolbarRowWrapper>
+		<ToolbarRowWrapper>
+			<UndoRedoButtonGroup editor={editorInstance} />
+			<Divider />
+			<LayoutButtonGroup editor={editorInstance} />
+			<Divider />
+			<ListButtonGroup editor={editorInstance} />
+			<Divider />
+			<ImageButtonGroup editor={editorInstance} />
+			<Divider />
+			<YoutubeButtonGroup editor={editorInstance} />
+			<SourceButton editor={editorInstance} />
+		</ToolbarRowWrapper>
+	</TextEditor>
 
-<style>
-	:global(.dt-tr) {
-		grid-template-columns: 2fr 1fr 1fr 1fr;
-	}
-</style>
+	<div class="mt-4">
+		<Button onclick={() => console.log(getEditorContent())}>Get Content</Button>
+		<Button onclick={() => setEditorContent('<p>New content!</p>')}>Set Content</Button>
+	</div>
+</main>
