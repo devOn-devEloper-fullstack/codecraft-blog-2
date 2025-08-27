@@ -4,14 +4,14 @@ import { addPost } from '$lib/server/posts';
 import { auth } from '$lib/auth';
 import { superValidate, setError } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { formSchema } from './schema';
+import { formSchema, imageUploadSchema } from './schema';
 import { s3, S3_BUCKET } from '$lib/server/s3';
 import { env } from '$env/dynamic/private';
 import { Upload } from '@aws-sdk/lib-storage';
 import sharp from 'sharp';
 import crypto from 'node:crypto';
 import { createImagesBulk, type NewImage } from '$lib/server/images';
-import { authCheck } from '$lib/server/server-utilities';
+import { authCheck, slugUnique } from '$lib/server/server-utilities';
 
 function sanitizeFileName(name: string) {
 	return name.replace(/[^\w\-.]+/g, '_');
@@ -28,7 +28,8 @@ export const load: PageServerLoad = async ({ request }) => {
 	if (!session?.user) throw redirect(302, '/auth/sign-in');
 
 	return {
-		form: await superValidate(zod4(formSchema))
+		form: await superValidate(zod4(formSchema)),
+		imageForm: await superValidate(zod4(imageUploadSchema))
 	};
 };
 
@@ -62,14 +63,10 @@ export const actions: Actions = {
 			return fail(400, { form });
 		}
 
-		// const postTitle = form.data.title;
-		// const slug = form.data.slug;
-		// const contentHtml = form.data.contentHtml;
-		// const excerpt = form.data.excerpt;
-		// const tags = form.data.tags;
-
+		// Destructure form data to access submission data from user:
 		const { title, slug, contentHtml, excerpt, tags } = form.data;
 
+		// Review non-null fields for truthiness
 		if (!title || !slug || !contentHtml) {
 			console.log('Missing required fields ⛔');
 			console.log(
@@ -88,6 +85,22 @@ export const actions: Actions = {
 			});
 		}
 
+		// Verify uniqueness of slug value:
+		const slugUniqueCheck = await slugUnique(slug);
+
+		if (!slugUniqueCheck) {
+			const errorResponse = {
+				error: 'CONFLICT',
+				message: 'Slug already exists.',
+				conflict: {
+					field: 'slug',
+					value: slug
+				}
+			};
+			return fail(409, errorResponse);
+		}
+
+		// Attempt database record creation
 		try {
 			await addPost({
 				postTitle: title,
@@ -103,14 +116,20 @@ export const actions: Actions = {
 			console.log('Unexpected error occurred during post creation', error);
 			return setError(form, 'Unexpected error');
 		}
-
-		throw redirect(303, `/me/posts/${slug}`);
+		
+		// Redirect to the newly created post
+		throw redirect(303, `/me/posts/edit/${slug}`);
 	},
 	uploadImage: async ({ request, locals }) => {
-		const session = await auth.api.getSession({
-			headers: request.headers
-		});
+		/**
+		 * uploadImage: A server action that accepts a request from the image upload form and adds the image(s) to S3 and database.
+		 */
+		console.log('Server Action Initialized. ✅');
+		
+		// Check for a valid user session:
+		const session = await authCheck({request})
 		if (!session) throw error(401, 'Unauthorized');
+
 
 		const form = await request.formData();
 		console.log('Form Data:', form);

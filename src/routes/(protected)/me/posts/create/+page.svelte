@@ -10,7 +10,7 @@
 	import SlugField from '$lib/components/blocks/SlugField.svelte';
 	import TagInput from '$lib/components/blocks/TagInput.svelte';
 	import Editor from '@tinymce/tinymce-svelte';
-	import { formSchema } from './schema';
+	import { formSchema, imageUploadSchema } from './schema';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { Modal } from 'flowbite-svelte';
 
@@ -45,7 +45,11 @@
 			'removeformat | help'
 	};
 
+	/**
+	 * Runes for Post Creation Form
+	*/
 	let value = $state('<p>This is the initial content of the editor</p>');
+
 
 	let form = $derived(
 		superForm(data.form, {
@@ -54,12 +58,26 @@
 		})
 	);
 
+
 	let formData = $derived(form.form);
 	let errors = $derived(form.errors);
 
 	$effect(() => {
 		$formData.contentHtml = value;
 	});
+
+	/**
+	 * Runes for Image Upload Form:
+	*/
+
+	let imageUpload = $derived(superForm(data.imageForm, {
+		validators: zod4Client(imageUploadSchema),
+		dataType: 'json'
+	}))
+
+	let imageFormData = $derived(imageUpload.form);
+	let imageErrors = $derived(imageUpload.errors);
+
 
 	function onSubmit(e: SubmitEvent) {
 		const formElement = e.target as HTMLFormElement;
@@ -77,9 +95,10 @@
 		// console.log(title.value, slug.value, tags.value);
 	}
 
+	/**
+	 * Modal State Runes
+	*/
 	let formModal = $state(false);
-	let error = $state('');
-
 	let selectionModal = $state(false);
 
 	// }
@@ -189,7 +208,16 @@
 							By clicking the add button below, your post will be saved so your image can be
 							uploaded. Saving your post will not result in the post being posted to the platform.
 						</p>
-						<label class="flex flex-col space-y-2" for="image">
+						<Form.Field form={imageUpload} name="image">
+							<Form.Control>
+								{#snippet children()}
+									<Form.Label>Select an image file</Form.Label>
+									<Input type="file" id="image" name="image" accept="image/*" required bind:value={$imageUpload.image}/>
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
+						<!-- <label class="flex flex-col space-y-2" for="image">
 							<span class="text-xl font-semibold text-black"> Select an image file </span>
 							<input
 								type="file"
@@ -201,8 +229,8 @@
 								multiple
 								required
 							/>
-						</label>
-						<label class="flex flex-col space-y-2" for="placeholder">
+						</label> -->
+						<!-- <label class="flex flex-col space-y-2" for="placeholder">
 							<span class="text-xl font-semibold text-black"> Placeholder </span>
 							<p>
 								A placeholder is text that will render in place of your image while the content is
@@ -216,8 +244,22 @@
 								class="w-[55%] rounded-full border border-black px-2 py-2 text-black"
 								placeholder="Enter your placeholder text"
 							/>
-						</label>
-						<label class="flex flex-col space-y-2" for="alt">
+						</label> -->
+						<Form.Field form={imageUpload} name="placeholder">
+							<Form.Control>
+								{#snippet children()}
+									<Form.Label>Placeholder</Form.Label>
+									<p>
+								A placeholder is text that will render in place of your image while the content is
+								being loaded. The provided placeholder should be informative, inclusive, and
+								semantic.
+							</p>
+									<Input type="text" id="placeholder" name="placeholder" bind:value={$imageUpload.placeholder}/>
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
+						<!-- <label class="flex flex-col space-y-2" for="alt">
 							<span class="text-xl font-semibold text-black"> Alternative Text </span>
 							<p>Alternative Text is an accessible way to describe an image for a screen reader.</p>
 							<input
@@ -227,8 +269,18 @@
 								class="w-[55%] rounded-full border border-black px-2 py-2 text-black"
 								placeholder="Enter your alternative text"
 							/>
-						</label>
-						<label class="flex flex-col space-y-2" for="caption">
+						</label> -->
+						<Form.Field form={imageUpload} name="alt">
+							<Form.Control>
+								{#snippet children()}
+									<Form.Label>Alternative Text</Form.Label>
+									<p>Alternative Text is an accessible way to describe an image for a screen reader.</p>
+									<Input type="text" id="alt" name="alt" bind:value={$imageUpload.alt}/>
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
+						<!-- <label class="flex flex-col space-y-2" for="caption">
 							<span class="text-xl font-semibold text-black">Image Caption</span>
 							<p>
 								If you would like for your image to be accompanied with a caption, the following
@@ -241,7 +293,20 @@
 								class="w-[55%] rounded-full border border-black px-2 py-2 text-black"
 								placeholder="Enter your caption"
 							/>
-						</label>
+						</label> -->
+						<Form.Field form={imageUpload} name="caption">
+							<Form.Control>
+								{#snippet children()}
+									<Form.Label>Image Caption</Form.Label>
+									<p>
+								If you would like for your image to be accompanied with a caption, the following
+								field can be used to supply our systems with your caption.
+							</p>
+									<Input type="text" id="caption" name="caption" bind:value={$imageUpload.caption}/>
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
 						<button
 							type="submit"
 							class="mt-2 w-[25%] rounded-xl bg-[var(--color-primary)] px-2 py-1 text-xl text-white"

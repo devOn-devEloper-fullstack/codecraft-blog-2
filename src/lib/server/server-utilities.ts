@@ -6,6 +6,8 @@ type AuthCheckArguments = {
 	request: RequestEvent['request'];
 };
 
+type serverDebugArguments<T = string> = Record<string, T>
+
 export async function authCheck({ request }: AuthCheckArguments) {
 	const session = await auth.api.getSession({ headers: request.headers });
 
