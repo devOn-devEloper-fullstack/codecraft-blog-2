@@ -135,6 +135,20 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
+				<Form.Field {form} name="excerpt">
+					<Form.Control>
+						{#snippet children()}
+							<Form.Label>Post Excerpt</Form.Label>
+							<Input
+								bind:value={$formData.excerpt}
+								type="text"
+								name="excerpt"
+								placeholder="Describe your post for your audience"
+							/>
+						{/snippet}
+					</Form.Control>
+					<Form.FieldErrors />
+				</Form.Field>
 				<Form.Field {form} name="tags">
 					<Form.Control>
 						{#snippet children()}

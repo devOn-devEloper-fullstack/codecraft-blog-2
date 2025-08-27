@@ -1,0 +1,21 @@
+@layer components {
+	.tipex-floating-button {
+		@apply border-tipex-control-border dark:border-tipex-control-border-dark rounded-tipex-lg hover:bg-tipex-control-hover dark:hover:bg-tipex-control-hover-dark flex h-6 w-6 flex-row items-center justify-center border;
+	}
+
+	.tipex-floating-group {
+		@apply rounded-tipex-lg shadow-tipex-md text-tipex-secondary dark:text-tipex-secondary-dark text-tipex-xs py-tipex-xs px-tipex-sm gap-tipex-xs bg-tipex-control-bg dark:bg-tipex-control-bg-dark z-10 flex flex-row items-center;
+	}
+
+	.tipex-link-edit-input-group input {
+		@apply pl-tipex-md pr-tipex-sm text-tipex-editor-text dark:text-tipex-editor-text-dark text-tipex-xs bg-tipex-control-hover dark:bg-tipex-control-hover-dark placeholder-tipex-editor-placeholder dark:placeholder-tipex-editor-placeholder-dark focus:placeholder-tipex-editor-placeholder dark:focus:placeholder-tipex-editor-placeholder-dark rounded-tipex-md w-full truncate focus:outline-0;
+	}
+
+	.tipex-link-edit-top {
+		@apply rounded-tipex-md flex;
+	}
+
+	.tipex-link-edit-input-group {
+		@apply gap-tipex-md flex h-full w-full max-w-xl;
+	}
+}

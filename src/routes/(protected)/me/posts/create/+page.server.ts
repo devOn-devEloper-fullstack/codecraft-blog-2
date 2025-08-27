@@ -11,6 +11,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import sharp from 'sharp';
 import crypto from 'node:crypto';
 import { createImagesBulk, type NewImage } from '$lib/server/images';
+import { authCheck } from '$lib/server/server-utilities';
 
 function sanitizeFileName(name: string) {
 	return name.replace(/[^\w\-.]+/g, '_');
@@ -33,14 +34,16 @@ export const load: PageServerLoad = async ({ request }) => {
 
 export const actions: Actions = {
 	createPost: async ({ request }) => {
-		// if (!locals.user) throw redirect(302, '/auth/sign-in');
-
+		/**
+		 * createPost: A server action that takes a request from the post creation form and creates a blog post
+		 */
 		console.log('Server Action Initialized. ✅');
-		const session = await auth.api.getSession({
-			headers: request.headers
-		});
+
+		// Check for a valid user session:
+		const session = await authCheck({ request });
 		if (!session?.user) throw redirect(302, '/auth/sign-in');
 
+		// Get and validate form data:
 		const form = await superValidate(request, zod4(formSchema));
 
 		if (!form.valid) {
@@ -59,13 +62,15 @@ export const actions: Actions = {
 			return fail(400, { form });
 		}
 
-		const postTitle = form.data.title;
-		const slug = form.data.slug;
-		const contentHtml = form.data.contentHtml;
+		// const postTitle = form.data.title;
+		// const slug = form.data.slug;
+		// const contentHtml = form.data.contentHtml;
 		// const excerpt = form.data.excerpt;
-		const tags = form.data.tags;
+		// const tags = form.data.tags;
 
-		if (!postTitle || !slug || !contentHtml) {
+		const { title, slug, contentHtml, excerpt, tags } = form.data;
+
+		if (!title || !slug || !contentHtml) {
 			console.log('Missing required fields ⛔');
 			console.log(
 				'\n\x1b[31mPost Title:\x1b[0m',
@@ -79,16 +84,16 @@ export const actions: Actions = {
 			);
 			return fail(400, {
 				message: 'Missing required fields',
-				values: { postTitle, slug, tags }
+				values: { title, slug, tags }
 			});
 		}
 
 		try {
 			await addPost({
-				postTitle,
+				postTitle: title,
 				slug,
 				contentHtml,
-				excerpt: undefined,
+				excerpt: excerpt,
 				tags,
 				published: false,
 				userId: session?.user.id

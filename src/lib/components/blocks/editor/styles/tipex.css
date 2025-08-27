@@ -1,0 +1,64 @@
+.tipex-editor {
+	@apply rounded-tipex-md bg-tipex-editor-bg dark:bg-tipex-editor-bg-dark border-tipex-editor-border dark:border-tipex-editor-border-dark flex flex-row gap-0 overflow-y-hidden border py-0 duration-200;
+}
+
+.tipex-editor.focused.focal {
+	@apply shadow-tipex-focus dark:shadow-tipex-focus-dark border-transparent outline-none;
+}
+
+.tipex-editor-wrap {
+	@apply flex h-full w-full flex-col gap-0;
+}
+
+.tipex-editor-section {
+	@apply px-tipex-sm py-tipex-md h-full overflow-y-auto;
+}
+
+/* Control Components */
+.tipex-controller {
+	@apply gap-tipex-sm py-tipex-md px-tipex-lg rounded-b-tipex-md bg-tipex-control-bg/80 dark:bg-tipex-control-bg-dark/80 border-tipex-control-border dark:border-tipex-control-border-dark sticky bottom-0 flex flex-row flex-wrap justify-between border-t backdrop-blur-sm backdrop-filter md:flex-row;
+	z-index: var(--z-tipex-controls);
+}
+
+.tipex-basic-controller-wrapper {
+	@apply gap-tipex-sm flex flex-wrap;
+}
+
+.tipex-edit-button {
+	@apply bg-tipex-control-bg text-tipex-control-text dark:bg-tipex-control-bg-dark dark:text-tipex-control-text-dark border-tipex-control-border dark:border-tipex-control-border-dark hover:bg-tipex-control-hover dark:hover:bg-tipex-control-hover-dark rounded-tipex-sm focus:ring-tipex-primary/50 flex cursor-pointer items-center justify-center border transition-all duration-100 focus:ring-2 focus:outline-none;
+}
+
+.tipex-button-rigid {
+	@apply px-tipex-md py-tipex-sm h-9 min-w-9;
+}
+
+.tipex-button-free {
+	@apply px-tipex-md py-tipex-sm h-9 min-w-9;
+}
+
+.tipex-button-extra {
+	@apply active:border-tipex-primary dark:active:border-tipex-primary-dark hover:scale-105 focus:scale-105 active:scale-90;
+}
+
+.tipex-edit-button.active {
+	@apply bg-tipex-control-active border-tipex-primary text-tipex-primary dark:bg-tipex-control-active-dark dark:border-tipex-primary-dark dark:text-tipex-primary-dark;
+}
+
+.tipex-utilities {
+	@apply gap-tipex-sm ml-auto flex max-w-lg justify-end;
+}
+
+/* Floating Menu */
+.tipex-floating-menu {
+	@apply bg-tipex-control-bg dark:bg-tipex-control-bg-dark border-tipex-control-border dark:border-tipex-control-border-dark rounded-tipex-md shadow-tipex-md p-tipex-sm gap-tipex-xs border;
+	z-index: var(--z-tipex-floating);
+}
+
+/* Link Components */
+.tipex-link-input {
+	@apply bg-tipex-control-bg dark:bg-tipex-control-bg-dark border-tipex-control-border dark:border-tipex-control-border-dark text-tipex-control-text dark:text-tipex-control-text-dark px-tipex-md py-tipex-sm rounded-tipex-sm focus:ring-tipex-primary/50 focus:border-tipex-primary dark:focus:border-tipex-primary-dark border focus:ring-2 focus:outline-none;
+}
+
+.tipex-link-button {
+	@apply bg-tipex-primary hover:bg-tipex-primary/90 dark:bg-tipex-primary-dark dark:hover:bg-tipex-primary-dark/90 px-tipex-md py-tipex-sm rounded-tipex-sm focus:ring-tipex-primary/50 text-white transition-colors duration-100 focus:ring-2 focus:outline-none;
+}
