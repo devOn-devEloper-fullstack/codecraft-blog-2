@@ -16,6 +16,10 @@
 
 	let { data }: { data: PageData } = $props();
 
+	console.log(data.itemDB);
+
+	type FileInput = (HTMLElement & { files: FileList }) | null;
+
 	let conf = {
 		height: 500,
 		menubar: false,
@@ -47,9 +51,8 @@
 
 	/**
 	 * Runes for Post Creation Form
-	*/
+	 */
 	let value = $state('<p>This is the initial content of the editor</p>');
-
 
 	let form = $derived(
 		superForm(data.form, {
@@ -57,7 +60,6 @@
 			dataType: 'json'
 		})
 	);
-
 
 	let formData = $derived(form.form);
 	let errors = $derived(form.errors);
@@ -68,43 +70,41 @@
 
 	/**
 	 * Runes for Image Upload Form:
-	*/
+	 */
 
-	let imageUpload = $derived(superForm(data.imageForm, {
-		validators: zod4Client(imageUploadSchema),
-		dataType: 'json'
-	}))
+	let imageUpload = $derived(
+		superForm(data.imageForm, {
+			validators: zod4Client(imageUploadSchema),
+			dataType: 'json'
+		})
+	);
+	let files = <FileList>$state();
 
 	let imageFormData = $derived(imageUpload.form);
-	let imageErrors = $derived(imageUpload.errors);
+	let imageEnhance = $derived(imageUpload.enhance);
 
+	$effect(() => {
+		if (files) {
+			const fileArray = Array.from(files);
+			$imageFormData.image = fileArray[0];
+		}
+	});
 
-	function onSubmit(e: SubmitEvent) {
-		const formElement = e.target as HTMLFormElement;
-		// const title = formElement.querySelector('input[name="title-input"]') as HTMLInputElement;
-		// const slug = formElement.querySelector('input[name="slug-input"]') as HTMLInputElement;
-		// const tags = formElement.querySelector('input[name="tag-input"]') as HTMLInputElement;
-
+	function onSubmit() {
 		const html = document
 			.querySelector('iframe')
 			?.contentDocument?.querySelector('body')?.innerHTML;
-
-		console.log(html);
 		$formData.contentHtml = html as unknown as string;
-
-		// console.log(title.value, slug.value, tags.value);
 	}
 
 	/**
 	 * Modal State Runes
-	*/
+	 */
 	let formModal = $state(false);
 	let selectionModal = $state(false);
 
 	// }
 </script>
-
-<SuperDebug data={$formData} />
 
 <div class="mb-2 flex w-[50vw] flex-col gap-3">
 	<Card.Header><h1 class="text-4xl font-semibold">Create a blog post</h1></Card.Header>
@@ -115,7 +115,7 @@
 		</div>
 	{/if}
 	<section>
-		<form action="?/createPost" method="POST" onsubmit={onSubmit}>
+		<form action="?/createPost" method="POST" onsubmit={onSubmit} id="post-creation">
 			<div class="mx-6">
 				<Form.Field {form} name="title">
 					<Form.Control>
@@ -190,19 +190,32 @@
 				<button
 					type="button"
 					class="w-fit rounded-md bg-[var(--color-primary)] px-4 py-2 text-white"
-					onclick={() => (formModal = true)}>Add Images</button
+					onclick={(e) => {
+						e.preventDefault();
+						formModal = true;
+					}}>Add Images</button
 				>
 				<button
 					type="button"
 					class="w-fit rounded-md border border-[var(--color-primary)] px-4 py-2 text-black"
-					onclick={() => (selectionModal = true)}
+					onclick={(e) => {
+						e.preventDefault();
+						selectionModal = true;
+					}}
 				>
 					Select from Gallery
 				</button>
 			</div>
-			<Modal form bind:open={formModal} class="h-[65vh] w-[30vw] rounded-xl">
+			<Modal form bind:open={formModal} class="h-[85vh] w-[35vw] rounded-xl">
 				<div class="flex flex-row justify-between">
-					<form action="?/uploadImage" method="POST" class="flex flex-col space-y-6">
+					<form
+						action="?/uploadImage"
+						method="POST"
+						class="flex flex-col space-y-6"
+						id="image-upload"
+						use:imageEnhance
+						enctype="multipart/form-data"
+					>
 						<h3 class="text-3xl font-bold text-black">Add a Post Image</h3>
 						<p>
 							By clicking the add button below, your post will be saved so your image can be
@@ -211,98 +224,65 @@
 						<Form.Field form={imageUpload} name="image">
 							<Form.Control>
 								{#snippet children()}
-									<Form.Label>Select an image file</Form.Label>
-									<Input type="file" id="image" name="image" accept="image/*" required bind:value={$imageUpload.image}/>
+									<Form.Label class="text-black">Select an image file</Form.Label>
+									<Input
+										type="file"
+										id="image"
+										name="image"
+										accept="image/*"
+										required
+										bind:files
+										class="rounded-full border px-4 py-2 text-black file:mr-4 file:rounded-full file:bg-[var(--color-primary)] file:px-3 file:py-1 file:text-white"
+									/>
 								{/snippet}
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<!-- <label class="flex flex-col space-y-2" for="image">
-							<span class="text-xl font-semibold text-black"> Select an image file </span>
-							<input
-								type="file"
-								id="image"
-								name="image"
-								class="w-[55%] rounded-full border border-black px-4 py-2 text-black file:mr-4 file:rounded-full file:bg-[var(--color-primary)] file:px-3 file:py-1 file:text-white"
-								placeholder="Select an Image"
-								accept="image/*"
-								multiple
-								required
-							/>
-						</label> -->
-						<!-- <label class="flex flex-col space-y-2" for="placeholder">
-							<span class="text-xl font-semibold text-black"> Placeholder </span>
-							<p>
-								A placeholder is text that will render in place of your image while the content is
-								being loaded. The provided placeholder should be informative, inclusive, and
-								semantic.
-							</p>
-							<input
-								type="text"
-								id="placeholder"
-								name="placeholder"
-								class="w-[55%] rounded-full border border-black px-2 py-2 text-black"
-								placeholder="Enter your placeholder text"
-							/>
-						</label> -->
 						<Form.Field form={imageUpload} name="placeholder">
 							<Form.Control>
 								{#snippet children()}
-									<Form.Label>Placeholder</Form.Label>
+									<Form.Label class="text-black">Placeholder</Form.Label>
 									<p>
-								A placeholder is text that will render in place of your image while the content is
-								being loaded. The provided placeholder should be informative, inclusive, and
-								semantic.
-							</p>
-									<Input type="text" id="placeholder" name="placeholder" bind:value={$imageUpload.placeholder}/>
+										A placeholder is text that will render in place of your image while the content
+										is being loaded. The provided placeholder should be informative, inclusive, and
+										semantic.
+									</p>
+									<Input
+										type="text"
+										id="placeholder"
+										name="placeholder"
+										bind:value={$imageFormData.placeholder}
+									/>
 								{/snippet}
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<!-- <label class="flex flex-col space-y-2" for="alt">
-							<span class="text-xl font-semibold text-black"> Alternative Text </span>
-							<p>Alternative Text is an accessible way to describe an image for a screen reader.</p>
-							<input
-								type="text"
-								id="alt"
-								name="alt"
-								class="w-[55%] rounded-full border border-black px-2 py-2 text-black"
-								placeholder="Enter your alternative text"
-							/>
-						</label> -->
 						<Form.Field form={imageUpload} name="alt">
 							<Form.Control>
 								{#snippet children()}
-									<Form.Label>Alternative Text</Form.Label>
-									<p>Alternative Text is an accessible way to describe an image for a screen reader.</p>
-									<Input type="text" id="alt" name="alt" bind:value={$imageUpload.alt}/>
+									<Form.Label class="text-black">Alternative Text</Form.Label>
+									<p>
+										Alternative text is an accessible way to describe an image for a screen reader.
+									</p>
+									<Input type="text" id="alt" name="alt" bind:value={$imageFormData.alt} />
 								{/snippet}
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<!-- <label class="flex flex-col space-y-2" for="caption">
-							<span class="text-xl font-semibold text-black">Image Caption</span>
-							<p>
-								If you would like for your image to be accompanied with a caption, the following
-								field can be used to supply our systems with your caption.
-							</p>
-							<input
-								type="text"
-								id="caption"
-								name="caption"
-								class="w-[55%] rounded-full border border-black px-2 py-2 text-black"
-								placeholder="Enter your caption"
-							/>
-						</label> -->
 						<Form.Field form={imageUpload} name="caption">
 							<Form.Control>
 								{#snippet children()}
-									<Form.Label>Image Caption</Form.Label>
+									<Form.Label class="text-black">Image Caption</Form.Label>
 									<p>
-								If you would like for your image to be accompanied with a caption, the following
-								field can be used to supply our systems with your caption.
-							</p>
-									<Input type="text" id="caption" name="caption" bind:value={$imageUpload.caption}/>
+										If you would like for your image to be accompanied with a caption, the following
+										field can be used to supply our systems with your caption.
+									</p>
+									<Input
+										type="text"
+										id="caption"
+										name="caption"
+										bind:value={$imageFormData.caption}
+									/>
 								{/snippet}
 							</Form.Control>
 							<Form.FieldErrors />
@@ -310,12 +290,16 @@
 						<button
 							type="submit"
 							class="mt-2 w-[25%] rounded-xl bg-[var(--color-primary)] px-2 py-1 text-xl text-white"
-							>Add Image</button
+							formaction="?/uploadImage"
+							onclick={() => console.log('form submitted!')}>Add Image</button
 						>
 					</form>
 					<button
 						class="absolute end-5 rounded-full px-3 py-2 hover:bg-gray-300"
-						onclick={() => (formModal = false)}>✕</button
+						onclick={(e) => {
+							e.preventDefault();
+							formModal = false;
+						}}>✕</button
 					>
 				</div>
 			</Modal>
@@ -323,20 +307,39 @@
 				<div class="flex flex-row justify-between">
 					<div class="flex flex-col space-y-6">
 						<h3 class="text-3xl font-bold text-black">Select an Image from the Gallery</h3>
-						e
+						<div
+							style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;"
+						>
+							{#each data.itemDB as item, i}
+								<figure style="margin:0">
+									<img
+										src={item.url}
+										alt={item.key}
+										style="width:100%;height:auto;object-fit:cover;border-radius:8px;"
+									/>
+									<figcaption
+										style="font-size:12px;color:#666;word-break:break-all;padding-top:4px;"
+									>
+										{#if item.caption}
+											<strong>Image Caption:</strong>
+											{item.caption}
+										{:else}
+											<strong>Image #{i}:</strong>
+										{/if}
+									</figcaption>
+								</figure>
+							{/each}
+						</div>
 					</div>
 					<button
 						class="absolute end-5 rounded-full px-3 py-2 hover:bg-gray-300"
-						onclick={() => (selectionModal = false)}>✕</button
+						onclick={(e) => {
+							e.preventDefault();
+							selectionModal = false;
+						}}>✕</button
 					>
 				</div>
 			</Modal>
-
-			<!--
-				<RichEditor
-				bind:contentHtml={$formData.contentHtml}
-				bind:contentJson={$formData.contentJson}
-			/> -->
 			<div class="ml-6">
 				<Editor apiKey="u2bmg51o325t8jlpn4tv96tpjb0w49740u1706xg7i6i8cgu" bind:value {conf} />
 				<input bind:value={$formData.contentHtml} name="contentHtml" hidden />
@@ -359,47 +362,3 @@
 		</form>
 	</section>
 </div>
-<!-- <form method="POST" onsubmit={beforeSubmit}>
-	<div class="stack">
-		<label>
-			<span>Title</span>
-			<input name="title" bind:value={title} required />
-		</label>
-
-		<SlugField bind:title bind:slug />
-
-		<label>
-			<span>Excerpt</span>
-			<textarea name="excerpt" rows="3" bind:value={excerpt}><</textarea>
-		</label>
-
-		<TagInput bind:tags />
-		<input type="hidden" name="tags" value={tags.join(',')} />
-
-		<div>
-			<RichEditor bind:this={editorRef} />
-			<input type="hidden" name="contentHtml" />
-			<input type="hidden" name="contentJson" />
-		</div>
-
-		<label class="row">
-			<input type="checkbox" name="publish" />
-			<span>Publish immediately</span>
-		</label>
-
-		<button type="submit">Create Post</button>
-	</div>
-</form> -->
-
-<!-- <style>
-	.stack {
-		display: grid;
-		gap: 1rem;
-		max-width: 760px;
-	}
-	.row {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-</style> -->

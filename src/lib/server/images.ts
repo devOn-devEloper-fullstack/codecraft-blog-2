@@ -4,14 +4,14 @@ import type { PostPictures } from '@prisma/client';
 
 export type NewImage = {
 	userId: string;
-	postId: string;
+	postId: string | null;
 	bucket: string;
 	region: string | null;
 	key: string;
 	etag: string | null;
 	checksum: string | null;
 	mimeType: string;
-	sizebytes: number | null;
+	sizeBytes: number | null;
 	width: number | null;
 	height: number | null;
 	placeholder: string;
@@ -41,5 +41,15 @@ export async function listImagesForUser(userId: string, limit = 100): Promise<Po
 		where: { userId },
 		orderBy: { createdAt: 'desc' },
 		take: limit
+	});
+}
+
+export async function listImagesForKeys(keys: Array<NewImage['key']>): Promise<PostPictures[]> {
+	return prisma.postPictures.findMany({
+		where: {
+			key: {
+				in: keys
+			}
+		}
 	});
 }
