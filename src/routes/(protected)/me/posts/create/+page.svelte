@@ -13,12 +13,17 @@
 	import { formSchema, imageUploadSchema } from './schema';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { Modal } from 'flowbite-svelte';
+	import type { PostPictures } from '@prisma/client';
+
+	type ImageAPIData = {
+		images: Array<
+			PostPictures & {
+				url: string;
+			}
+		>;
+	};
 
 	let { data }: { data: PageData } = $props();
-
-	console.log(data.itemDB);
-
-	type FileInput = (HTMLElement & { files: FileList }) | null;
 
 	let conf = {
 		height: 500,
@@ -54,15 +59,15 @@
 	 */
 	let value = $state('<p>This is the initial content of the editor</p>');
 
-	let form = $derived(
+	let formCreate = $derived(
 		superForm(data.form, {
 			validators: zod4Client(formSchema),
 			dataType: 'json'
 		})
 	);
 
-	let formData = $derived(form.form);
-	let errors = $derived(form.errors);
+	let formData = $derived(formCreate.form);
+	let errors = $derived(formCreate.errors);
 
 	$effect(() => {
 		$formData.contentHtml = value;
@@ -103,6 +108,19 @@
 	let formModal = $state(false);
 	let selectionModal = $state(false);
 
+	let fetchData: ImageAPIData | null;
+
+	async function fetchImageData() {
+		try {
+			const response = await fetch('/api/images/me');
+			fetchData = await response.json();
+
+			console.log(fetchData);
+		} catch (error) {
+			console.error('Error fetching data:', error);
+		}
+	}
+
 	// }
 </script>
 
@@ -117,7 +135,7 @@
 	<section>
 		<form action="?/createPost" method="POST" onsubmit={onSubmit} id="post-creation">
 			<div class="mx-6">
-				<Form.Field {form} name="title">
+				<Form.Field form={formCreate} name="title">
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Post Title</Form.Label>
@@ -138,7 +156,7 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Form.Field {form} name="slug">
+				<Form.Field form={formCreate} name="slug">
 					<Form.Control>
 						{#snippet children()}
 							<Form.Label>Post Slug</Form.Label>
@@ -154,7 +172,7 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Form.Field {form} name="excerpt">
+				<Form.Field form={formCreate} name="excerpt">
 					<Form.Control>
 						{#snippet children()}
 							<Form.Label>Post Excerpt</Form.Label>
@@ -168,7 +186,7 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Form.Field {form} name="tags">
+				<Form.Field form={formCreate} name="tags">
 					<Form.Control>
 						{#snippet children()}
 							<Form.Label>Post Tags</Form.Label>
@@ -202,6 +220,7 @@
 						e.preventDefault();
 						selectionModal = true;
 					}}
+					onmouseenter={fetchImageData}
 				>
 					Select from Gallery
 				</button>
@@ -310,7 +329,7 @@
 						<div
 							style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;"
 						>
-							{#each data.itemDB as item, i}
+							{#each fetchData?.images as item, i}
 								<figure style="margin:0">
 									<img
 										src={item.url}

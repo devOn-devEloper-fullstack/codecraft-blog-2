@@ -36,6 +36,13 @@ export async function getImageByKeyForUser(
 	return prisma.postPictures.findFirst({ where: { key, userId } });
 }
 
+/**
+ * Makes a database call to retrieve all image metadata for a given user.
+ * @param userId
+ * @param limit
+ * @returns Array of image metadata
+ */
+
 export async function listImagesForUser(userId: string, limit = 100): Promise<PostPictures[]> {
 	return prisma.postPictures.findMany({
 		where: { userId },

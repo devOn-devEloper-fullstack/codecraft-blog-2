@@ -50,7 +50,10 @@ export const load: PageServerLoad = async ({ request }) => {
 
 	const imageGalleryDB = await listImagesForKeys(keys);
 
-	const itemDB = items.map((item, i) => Object.assign({}, item, imageGalleryDB[i]));
+	const itemDB = items.map((item) => {
+		const images = imageGalleryDB.find((image) => image.key === item.key);
+		return { ...item, ...images };
+	});
 
 	console.log(itemDB);
 
@@ -277,6 +280,6 @@ export const actions: Actions = {
 			return fail(500, { error: `Failed to record uploaded images in database.` });
 		}
 
-		return { success: { count: 1, items: uploaded } };
+		return { form: { success: { count: 1, items: uploaded } } };
 	}
 };
