@@ -69,7 +69,7 @@
 <main
 	class="grid h-[100vh] w-[100vw] grid-cols-[40px_calc(100vw-40px)] grid-rows-[60px_calc(100vh-60px)] overflow-auto"
 >
-	<aside class="fixed z-35 h-[100vh] w-[40px] bg-[var(--color-primary)]">
+	<aside class="fixed z-35 h-[100vh] w-[40px] bg-[var(--primary)]">
 		<nav class="flex h-full flex-col items-center justify-center">
 			<ul class="flex h-full flex-col items-center justify-center gap-3 space-y-2">
 				<li>
@@ -128,7 +128,7 @@
 					>{getUserInitials(user.name)}</Avatar
 				>
 				<button
-					class="rounded bg-[var(--color-primary)] px-4 py-2 text-white hover:bg-[var(--primary-300)]"
+					class="rounded bg-[var(--primary)] px-4 py-2 text-white hover:bg-[var(--primary-300)]"
 					>Logout</button
 				>
 			</div>

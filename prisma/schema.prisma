@@ -67,19 +67,29 @@ model Verification {
 }
 
 model Posts {
-  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  User        User?          @relation(fields: [userId], references: [id])
-  userId      String?        @db.Uuid
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  User        User?             @relation(fields: [userId], references: [id])
+  userId      String?           @db.Uuid
   postTitle   String // No Rich Text
   slug        String
   excerpt     String?
   contentHtml String
   tags        String[]
-  published   Boolean        @default(false)
+  published   Boolean           @default(false)
+  status      PostStatus        @default(DRAFT)
   publishedAt DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
   pictures    PostPictures[]
+  moderation  ModerationEvent[]
+}
+
+enum PostStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PUBLISHED
 }
 
 model UserSettings {
@@ -97,6 +107,7 @@ model PostPictures {
 
   bucket   String
   key      String
+  url      String
   region   String?
   etag     String?
   checksum String?
@@ -115,4 +126,23 @@ model PostPictures {
 
   @@unique([postId, placeholder])
   @@index([postId])
+}
+
+model ModerationEvent {
+  id      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId  String           @db.Uuid
+  actorId String
+  action  ModerationAction
+  reason  String?
+
+  createdAt DateTime @default(now())
+
+  post Posts @relation(fields: [postId], references: [id])
+}
+
+enum ModerationAction {
+  SUBMIT
+  APPROVE
+  REJECT
+  PUBLISH
 }

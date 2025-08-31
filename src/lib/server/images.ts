@@ -8,6 +8,7 @@ export type NewImage = {
 	bucket: string;
 	region: string | null;
 	key: string;
+	url: string;
 	etag: string | null;
 	checksum: string | null;
 	mimeType: string;

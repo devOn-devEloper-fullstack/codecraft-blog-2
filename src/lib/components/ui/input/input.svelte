@@ -24,8 +24,8 @@
 		bind:this={ref}
 		data-slot="input"
 		class={cn(
-			'flex h-12 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-2 text-sm font-medium shadow-xs ring-offset-background transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30',
-			'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+			'selection:text-primary-foreground flex h-12 w-full min-w-0 rounded-md border border-[var(--input)] bg-transparent px-3 py-2 text-sm font-medium shadow-xs ring-offset-background transition-[color,box-shadow] outline-none selection:bg-primary placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-[var(--input)/30]',
+			'focus-visible:border-[var(--ring)] focus-visible:ring-[3px] focus-visible:ring-[var(--ring)/50]',
 			'aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
 			className
 		)}
@@ -39,8 +39,8 @@
 		bind:this={ref}
 		data-slot="input"
 		class={cn(
-			'flex h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 py-1 text-base shadow-xs ring-offset-background transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30',
-			'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+			'flex h-9 w-full min-w-0 rounded-md border border-[var(--input)] bg-background px-3 py-1 text-base shadow-xs ring-offset-background transition-[color,box-shadow] outline-none selection:bg-[var(--primary)] selection:text-[var(--primary-foreground)] placeholder:text-[var(--muted-foreground)] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-[var(--input)/30]',
+			'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-[var(--ring)/50]',
 			'aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
 			className
 		)}

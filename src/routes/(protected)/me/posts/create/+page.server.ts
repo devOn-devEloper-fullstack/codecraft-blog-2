@@ -2,7 +2,7 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { addPost } from '$lib/server/posts';
 import { auth } from '$lib/auth';
-import { superValidate, setError } from 'sveltekit-superforms';
+import { superValidate, setError, message } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { formSchema, imageUploadSchema } from './schema';
 import { s3, S3_BUCKET, encodeKey } from '$lib/server/s3';
@@ -258,6 +258,7 @@ export const actions: Actions = {
 			bucket,
 			region,
 			key,
+			url: `/img/${encodeKey(key)}`,
 			etag,
 			checksum,
 			mimeType,
@@ -275,6 +276,9 @@ export const actions: Actions = {
 
 		try {
 			await createImage(toCreate);
+			return message(form, {
+				status: 'success'
+			});
 		} catch (e) {
 			console.error('⛔ DB insert failed ⛔', e);
 			return fail(500, { error: `Failed to record uploaded images in database.` });
