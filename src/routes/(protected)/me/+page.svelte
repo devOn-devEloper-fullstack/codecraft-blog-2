@@ -43,19 +43,25 @@
 				</div>
 			</div>
 		</div>
-		<div class="h-[calc(100%-40%-60px)] w-full rounded-xl bg-gray-100 p-4 shadow-sm">
+		<div
+			class="h-[calc(100%-40%-60px)] w-full rounded-xl bg-gray-100 p-4 shadow-sm dark:border dark:border-white dark:bg-[var(--dark)] dark:text-white"
+		>
 			<span class="text-2xl font-semibold">Profile Settings</span>
 		</div>
 	</div>
 
 	<!-- MIDDLE PANEL: PUBLISHED POSTS & POSTS AWAITING APPROVAL -->
 
-	<div class="mt-4 h-[100%] w-[100%] rounded-xl bg-gray-100">
+	<div
+		class="mt-4 h-[100%] w-[100%] rounded-xl bg-gray-100 dark:border dark:border-white dark:bg-[var(--dark)] dark:text-white"
+	>
 		<UserPostsTable data={dataProp} includeDates={false} />
 	</div>
 
 	<!-- RIGHT SIDE PANEL: ACTIVITY FEED -->
-	<div class="mt-4 h-[100%] w-[100%] rounded-xl bg-gray-100 p-4">
+	<div
+		class="mt-4 h-[100%] w-[100%] rounded-xl bg-gray-100 p-4 dark:border dark:border-white dark:bg-[var(--dark)] dark:text-white"
+	>
 		<h2 class="m border-b border-gray-400 pb-4 text-xl font-semibold">ACTIVITY FEED</h2>
 		<div class="ml-4 flex flex-col">
 			<Timeline order="vertical" class="mt-4">

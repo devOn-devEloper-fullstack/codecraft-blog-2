@@ -13,18 +13,24 @@
 	import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 	import Image from '@tiptap/extension-image';
 	import Link from '@tiptap/extension-link';
+	import type { EditorTypes } from '$lib/types';
+	import { getEditorState, setEditorState } from '../post-creation/state.svelte';
 
 	/** Properties **/
-	let { editor = $bindable(), controlToolbar, image }: EditorProps = $props();
+	let {
+		image,
+		htmlContent = $bindable(),
+		jsonContent = $bindable()
+	}: Omit<EditorProps, 'editor' | 'controlToolbar'> = $props();
 	let contentHTML: string = $state('');
 
 	/** State Declaration **/
 
 	let elementReference: HTMLDivElement | undefined = $state();
+	let innerHtml: string | undefined = $state();
+	let editor = getEditorState();
 
-	function getHTML() {
-		contentHTML = elementReference?.innerHTML ?? '';
-	}
+	/** Setup lowlight instantiation **/
 
 	const lowlight = createLowlight();
 
@@ -36,79 +42,80 @@
 	/** Tiptap Instantiation **/
 
 	onMount(() => {
-		editor = new Editor({
-			element: elementReference,
-			extensions: [
-				StarterKit,
-				Image,
-				CodeBlockLowlight.configure({
-					lowlight
-				}),
-				Link.configure({
-					openOnClick: false,
-					autolink: true,
-					defaultProtocol: 'https',
-					protocols: ['http', 'https'],
-					isAllowedUri: (url, ctx) => {
-						try {
-							// construct URL
-							const parsedUrl = url.includes(':')
-								? new URL(url)
-								: new URL(`${ctx.defaultProtocol}://${url}`);
+		setEditorState(
+			new Editor({
+				element: elementReference,
+				extensions: [
+					StarterKit,
+					Image,
+					CodeBlockLowlight.configure({
+						lowlight
+					}),
+					Link.configure({
+						openOnClick: false,
+						autolink: true,
+						defaultProtocol: 'https',
+						protocols: ['http', 'https'],
+						isAllowedUri: (url, ctx) => {
+							try {
+								// construct URL
+								const parsedUrl = url.includes(':')
+									? new URL(url)
+									: new URL(`${ctx.defaultProtocol}://${url}`);
 
-							// use default validation
-							if (!ctx.defaultValidate(parsedUrl.href)) {
+								// use default validation
+								if (!ctx.defaultValidate(parsedUrl.href)) {
+									return false;
+								}
+
+								// disallowed protocols
+								const disallowedProtocols = ['ftp', 'file', 'mailto'];
+								const protocol = parsedUrl.protocol.replace(':', '');
+
+								if (disallowedProtocols.includes(protocol)) {
+									return false;
+								}
+
+								// only allow protocols specified in ctx.protocols
+								const allowedProtocols = ctx.protocols.map((p) =>
+									typeof p === 'string' ? p : p.scheme
+								);
+
+								if (!allowedProtocols.includes(protocol)) {
+									return false;
+								}
+
+								// disallowed domains
+								const disallowedDomains = ['example-phishing.com', 'malicious-site.net'];
+								const domain = parsedUrl.hostname;
+
+								if (disallowedDomains.includes(domain)) {
+									return false;
+								}
+
+								// all checks have passed
+								return true;
+							} catch {
 								return false;
 							}
+						},
+						shouldAutoLink: (url) => {
+							try {
+								// construct URL
+								const parsedUrl = url.includes(':') ? new URL(url) : new URL(`https://${url}`);
 
-							// disallowed protocols
-							const disallowedProtocols = ['ftp', 'file', 'mailto'];
-							const protocol = parsedUrl.protocol.replace(':', '');
+								// only auto-link if the domain is not in the disallowed list
+								const disallowedDomains = ['example-no-autolink.com', 'another-no-autolink.com'];
+								const domain = parsedUrl.hostname;
 
-							if (disallowedProtocols.includes(protocol)) {
+								return !disallowedDomains.includes(domain);
+							} catch {
 								return false;
 							}
-
-							// only allow protocols specified in ctx.protocols
-							const allowedProtocols = ctx.protocols.map((p) =>
-								typeof p === 'string' ? p : p.scheme
-							);
-
-							if (!allowedProtocols.includes(protocol)) {
-								return false;
-							}
-
-							// disallowed domains
-							const disallowedDomains = ['example-phishing.com', 'malicious-site.net'];
-							const domain = parsedUrl.hostname;
-
-							if (disallowedDomains.includes(domain)) {
-								return false;
-							}
-
-							// all checks have passed
-							return true;
-						} catch {
-							return false;
 						}
-					},
-					shouldAutoLink: (url) => {
-						try {
-							// construct URL
-							const parsedUrl = url.includes(':') ? new URL(url) : new URL(`https://${url}`);
-
-							// only auto-link if the domain is not in the disallowed list
-							const disallowedDomains = ['example-no-autolink.com', 'another-no-autolink.com'];
-							const domain = parsedUrl.hostname;
-
-							return !disallowedDomains.includes(domain);
-						} catch {
-							return false;
-						}
-					}
-				})
-			],
-			content: `
+					})
+				],
+				content: `
         <p>
           That's a boring paragraph followed by a fenced code block:
         </p>
@@ -127,17 +134,25 @@
           Press Command/Ctrl + Enter to leave the fenced code block and continue typing in boring paragraphs.
         </p>
       `,
-			onTransaction: () => {
-				editor = editor;
-			}
-		});
+				onTransaction: () => {
+					editor = getEditorState();
+				}
+			})
+		);
+		htmlContent = getEditorState()?.getHTML();
+		jsonContent = getEditorState()?.getJSON();
 	});
+
+	/** Setting HTML & JSON Content */
+	function getElementContent() {
+		htmlContent = editor?.getHTML();
+		jsonContent = editor?.getJSON();
+	}
 </script>
 
 <div class="editor-container">
-	<EditorToolbar {editor} {image} />
-	<div bind:this={elementReference} class="editor"></div>
+	<EditorToolbar editor={getEditorState()} {image} />
+	<div bind:this={elementReference} class="editor" oninput={() => getElementContent()}></div>
+	<input bind:value={htmlContent} name="contentHtml" hidden />
+	<input bind:value={jsonContent} name="contentJson" hidden />
 </div>
-
-<button onclick={getHTML} class="toolbar-button">Get HTML</button>
-<p>{contentHTML}</p>

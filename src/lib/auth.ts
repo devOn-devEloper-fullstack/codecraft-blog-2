@@ -2,6 +2,8 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaClient } from '@prisma/client';
 import { sendEmail } from '$lib/server/email';
+import { sveltekitCookies } from 'better-auth/svelte-kit';
+import { getRequestEvent } from '$app/server';
 
 const prisma = new PrismaClient();
 export const auth = betterAuth({
@@ -45,7 +47,8 @@ export const auth = betterAuth({
 		database: {
 			generateId: false
 		}
-	}
+	},
+	plugins: [sveltekitCookies(getRequestEvent)]
 });
 
 export type Session = typeof auth.$Infer.Session.session;

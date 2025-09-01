@@ -209,8 +209,12 @@
 
 <div>
 	<div>
-		<table class="w-[100%] table-auto overflow-hidden rounded-xl border border-gray-300">
-			<thead class="h-[55px] bg-[var(--color-primary)] text-left text-xl text-white">
+		<table
+			class="w-[100%] table-auto overflow-hidden rounded-xl border border-gray-300 dark:bg-[var(--dark)] dark:text-white"
+		>
+			<thead
+				class="h-[55px] bg-[var(--primary)] text-left text-xl text-white dark:bg-[var(--primary-500)]"
+			>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<tr>
 						{#each headerGroup.headers as header (header.id)}
@@ -232,7 +236,7 @@
 						class="h-[45px] border-b border-gray-200 bg-gray-100 px-4 py-2 text-left text-xl whitespace-nowrap"
 					>
 						{#each row.getVisibleCells() as cell}
-							<td class="px-4">
+							<td class="px-4 dark:bg-[var(--dark)] dark:text-white">
 								{#if cell.column.id === 'postId' || cell.column.id === 'title' || cell.column.id === 'slug'}
 									{cell.getValue()}
 								{:else if cell.column.id === 'tags'}
@@ -252,7 +256,7 @@
 										<UserPostsButton
 											href={cell.getValue() as string}
 											content="View"
-											class="bg-[var(--color-primary)] px-5 py-3 text-xl"
+											class="bg-[var(--primary)] px-5 py-3 text-xl dark:bg-[var(--primary-500)]"
 										/>
 									</div>
 								{:else if cell.column.id === 'edit'}
@@ -260,7 +264,7 @@
 										<UserPostsButton
 											href={cell.getValue() as string}
 											content="Edit"
-											class="bg-[var(--color-primary)] px-5 py-3 text-xl"
+											class="bg-[var(--primary)] px-5 py-3 text-xl dark:bg-[var(--primary-500)]"
 										/>
 									</div>
 								{:else if includeDates && (cell.column.id === 'createdAt' || cell.column.id === 'publishedAt')}

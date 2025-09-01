@@ -2,7 +2,7 @@
 /* @plugin "tailwindcss-animate"; */
 @import 'tw-animate-css';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
 	--radius: 0.625rem;
@@ -57,6 +57,7 @@
 	--destructive: hsl(347 77% 50%);
 	--tertiary: hsl(37.7 92.1% 50.2%);
 	--line: hsl(0 0% 100%);
+	--success: #2c6e49;
 
 	/* black */
 	--contrast: hsl(0 0% 0%);
@@ -250,14 +251,5 @@
 	}
 	to {
 		opacity: 0;
-	}
-}
-
-@layer base {
-	* {
-		@apply border-border;
-	}
-	body {
-		@apply bg-background text-foreground;
 	}
 }

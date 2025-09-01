@@ -30,8 +30,9 @@
 </script>
 
 <Input
-	bind:value={slugValue}
+	bind:value={slug}
 	{...restProps}
 	placeholder="Enter a unique slug for your post"
-	name="slug-input"
+	name="slug"
+	type="text"
 />

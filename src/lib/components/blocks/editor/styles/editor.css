@@ -1,15 +1,15 @@
 @import 'tailwindcss';
 
 .editor-container {
-	@apply h-[50vh] w-[100%] rounded-xl border border-black px-3 py-2;
+	@apply h-[50vh] w-[100%] rounded-xl border border-[var(--input)] px-3 py-2 shadow-sm focus-visible:border-[var(--ring)] focus-visible:ring-[3px] focus-visible:ring-[var(--ring)/50];
 }
 
 .editor {
-	@apply min-h-[80%] w-[100%] overflow-y-auto py-6;
+	@apply max-h-[80%] w-[100%] overflow-y-scroll py-6;
 }
 
 .toolbar-container {
-	@apply flex h-fit w-[100%] flex-row gap-3 border-b border-gray-500 py-2;
+	@apply flex h-fit w-[100%] flex-row gap-3 border-b-2 border-[var(--input)] py-2;
 }
 
 .toolbar-button {
@@ -73,7 +73,6 @@
 		padding: 0.75rem 1rem;
 		height: fit-content;
 		width: 90%;
-		z-index: 30;
 
 		code {
 			background-color: #001d3d;

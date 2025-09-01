@@ -55,8 +55,6 @@ export const load: PageServerLoad = async ({ request }) => {
 		return { ...item, ...images };
 	});
 
-	console.log(itemDB);
-
 	return {
 		form: await superValidate(zod4(formSchema)),
 		imageForm: await superValidate(zod4(imageUploadSchema)),
@@ -89,7 +87,9 @@ export const actions: Actions = {
 				'\n\x1b[31mPost Tags:\x1b[0m',
 				form.data.tags,
 				'\n\x1b[31mPost Content:\x1b[0m',
-				form.data.contentHtml
+				form.data.contentHtml,
+				'These are the following errors that were detected in the submission:',
+				form.errors
 			);
 			return fail(400, { form });
 		}

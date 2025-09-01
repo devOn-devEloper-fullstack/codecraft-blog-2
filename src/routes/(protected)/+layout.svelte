@@ -67,16 +67,16 @@
 </svelte:head>
 
 <main
-	class="grid h-[100vh] w-[100vw] grid-cols-[40px_calc(100vw-40px)] grid-rows-[60px_calc(100vh-60px)] overflow-auto"
+	class="grid h-[100vh] w-[100vw] grid-cols-[40px_calc(100vw-40px)] grid-rows-[60px_calc(100vh-60px)] overflow-auto dark:bg-dark"
 >
-	<aside class="fixed z-35 h-[100vh] w-[40px] bg-[var(--primary)]">
+	<aside class="fixed z-35 h-[100vh] w-[40px] bg-[var(--primary)] dark:bg-[var(--dark)]">
 		<nav class="flex h-full flex-col items-center justify-center">
 			<ul class="flex h-full flex-col items-center justify-center gap-3 space-y-2">
 				<li>
 					<a href="/" class="rounded-md text-white hover:bg-gray-200"><House class="w-[20px]" /></a>
 				</li>
 				<li>
-					<a href="/" class="rounded-md text-white hover:bg-gray-200"
+					<a href="/me/posts/create" class="rounded-md text-white hover:bg-gray-200"
 						><SquarePen class="w-[20px]" /></a
 					>
 				</li>
@@ -104,10 +104,10 @@
 		</nav>
 	</aside>
 	<nav
-		class="fixed z-30 flex h-[60px] w-[calc(100vw-40px)] translate-x-[40px] items-center justify-between border-b border-gray-300 bg-gray-100 px-4 dark:bg-[var(--primary-900)]"
+		class="fixed z-100 flex h-[60px] w-[calc(100vw-40px)] translate-x-[40px] items-center justify-between border-b border-gray-300 bg-gray-200 px-4 text-black dark:bg-[var(--dark)] dark:text-white"
 	>
 		<div class="flex w-full items-center justify-between space-x-4">
-			<h1 class="text-xl font-bold">CodeCraft Blog</h1>
+			<h1 class="text-xl font-bold text-black dark:text-white">CodeCraft Blog</h1>
 			<div class="flex flex-row items-center space-x-2">
 				<span class="text-xl font-semibold">{user.name}</span>
 				<div class="rounded-full border border-gray-500 px-0.5 hover:bg-gray-200">
@@ -116,7 +116,7 @@
 			</div>
 
 			<div class="flex items-center space-x-2">
-				<Search class="text-black" />
+				<Search class="text-black dark:text-white" />
 				<Bell />
 
 				{#if isDarkMode}
@@ -124,11 +124,11 @@
 				{:else}
 					<button type="button" onclick={toggleTheme}><Moon /></button>
 				{/if}
-				<Avatar class="rounded-full border border-gray-500 px-2 py-2 ring-gray-500"
+				<Avatar class="rounded-full border border-gray-500 px-2 py-2 ring-gray-500 dark:text-black"
 					>{getUserInitials(user.name)}</Avatar
 				>
 				<button
-					class="rounded bg-[var(--primary)] px-4 py-2 text-white hover:bg-[var(--primary-300)]"
+					class="rounded bg-[var(--primary)] px-4 py-2 font-semibold text-white hover:bg-[var(--primary-500)] dark:bg-[var(--primary-500)] dark:hover:bg-[var(--primary-300)]"
 					>Logout</button
 				>
 			</div>

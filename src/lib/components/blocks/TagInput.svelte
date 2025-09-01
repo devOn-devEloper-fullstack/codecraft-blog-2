@@ -47,7 +47,7 @@
 <div class="flex justify-start gap-4">
 	{#each tagValue as tag}
 		<div
-			class="mb-2 flex items-center justify-between gap-2 rounded-full border border-gray-700 bg-primary px-2 py-1 text-white"
+			class="mb-2 flex items-center justify-between gap-2 rounded-full border border-gray-700 bg-[var(--primary)] px-2 py-1 text-white"
 		>
 			<span>{tag}</span>
 			<button type="button" onclick={(e) => removeTag(getInnerText(getSibling(e.target)))}>✕</button
@@ -70,7 +70,7 @@
 	<button
 		type="button"
 		onclick={() => addTag(inputValue, disabled)}
-		class="mt-1 w-30 rounded-md bg-primary px-2 py-2 text-white"
+		class="mt-1 w-30 rounded-md bg-[var(--primary)] px-2 py-2 text-white hover:bg-[var(--primary-500)]"
 		{disabled}>Add Tag</button
 	>
 </div>
