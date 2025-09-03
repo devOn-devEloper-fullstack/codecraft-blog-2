@@ -14,18 +14,22 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name          String
-  email         String         @unique
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  email         String             @unique
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
   image         String?
   emailVerified Boolean
+  role          String             @default("User")
   sessions      Session[]
   accounts      Account[]
   settings      UserSettings?
-  posts         Posts[]
+  authorPosts   Posts[]            @relation("Author")
+  editorPosts   Posts[]            @relation("Editor")
   images        PostPictures[]
+  moderation    ModerationEvent[]
+  trustScore    AuthorTrustMetric?
 }
 
 model Session {
@@ -67,21 +71,78 @@ model Verification {
 }
 
 model Posts {
-  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  User        User?             @relation(fields: [userId], references: [id])
-  userId      String?           @db.Uuid
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  User        User?          @relation("Author", fields: [userId], references: [id])
+  userId      String?        @db.Uuid
   postTitle   String // No Rich Text
   slug        String
   excerpt     String?
   contentHtml String
   tags        String[]
-  published   Boolean           @default(false)
-  status      PostStatus        @default(DRAFT)
+  published   Boolean        @default(false)
+  status      PostStatus     @default(DRAFT)
   publishedAt DateTime?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   pictures    PostPictures[]
-  moderation  ModerationEvent[]
+
+  editor   User?   @relation("Editor", fields: [editorId], references: [id])
+  editorId String? @db.Uuid
+
+  currentRevision Revision?  @relation("Current Revision")
+  revisions       Revision[] @relation("Revisions")
+
+  flags      ContentFlag[]
+  moderation ModerationEvent[]
+  reports    Report[]
+}
+
+model Revision {
+  id                    String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId                String        @db.Uuid
+  post                  Posts?        @relation("Revisions", fields: [postId], references: [id])
+  content               String
+  summary               String?
+  createdBy             String
+  createdAt             DateTime      @default(now())
+  contentFlag           ContentFlag[]
+  currentRevisionPostId String?       @unique @db.Uuid
+  currentRevisionPost   Posts?        @relation("Current Revision", fields: [currentRevisionPostId], references: [id])
+}
+
+model ContentFlag {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId     String     @db.Uuid
+  post       Posts      @relation(fields: [postId], references: [id])
+  revisionId String?    @db.Uuid
+  revision   Revision?  @relation(fields: [revisionId], references: [id])
+  signal     FlagSignal
+  score      Float?
+  severity   Severity
+  source     FlagSource // MODEL for OpenAI, HUMAN for mod/ed, REPORT for reader
+  details    Json?
+  createdAt  DateTime   @default(now())
+  resolvedAt DateTime?
+  resolvedBy String?
+}
+
+model Report {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId     String       @db.Uuid
+  post       Posts        @relation(fields: [postId], references: [id])
+  reporterId String? // null if unauth
+  reason     String
+  evidence   String?
+  status     ReportStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
+  closedAt   DateTime?
+  handledBy  String?
+}
+
+enum ReportStatus {
+  OPEN
+  CLOSED
+  DISMISSED
 }
 
 enum PostStatus {
@@ -90,6 +151,29 @@ enum PostStatus {
   APPROVED
   REJECTED
   PUBLISHED
+}
+
+enum FlagSource {
+  MODEL
+  HUMAN
+  REPORT
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FlagSignal {
+  TOXICITY
+  SLUR
+  PII
+  NSFW_IMAGE
+  LINK_POLICY
+  MALWARE_LINK
+  OTHER
 }
 
 model UserSettings {
@@ -131,9 +215,14 @@ model PostPictures {
 model ModerationEvent {
   id      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   postId  String           @db.Uuid
-  actorId String
+  actorId String           @db.Uuid
+  actor   User             @relation(fields: [actorId], references: [id])
   action  ModerationAction
   reason  String?
+
+  ruleVersion Int? // for future rule engines (kept for audit)
+  provider    String? // "openai"
+  diffPatch   Json?
 
   createdAt DateTime @default(now())
 
@@ -141,8 +230,30 @@ model ModerationEvent {
 }
 
 enum ModerationAction {
-  SUBMIT
   APPROVE
   REJECT
-  PUBLISH
+  REDACT
+  ESCALATE
+  QUARANTINE
+  UNQUARANTINE
+}
+
+model AuthorTrustMetric {
+  id              String    @id @default(cuid())
+  userId          String    @unique @db.Uuid
+  user            User      @relation(fields: [userId], references: [id])
+  rejectedCount   Int       @default(0) // from moderator rejections
+  reportedCount   Int       @default(0) // accepted reports on user's posts
+  humanFlagCount  Int       @default(0) // flags sourced = HUMAN
+  score           Float     @default(0) // computed metric
+  isAdminTrusted  Boolean   @default(false) // admin toggle
+  lastEvaluatedAt DateTime?
+  updatedAt       DateTime  @updatedAt
+}
+
+model AbuseCounter {
+  id        String   @id @default(cuid())
+  bucket    String   @unique // e.g., "report:ip:{hash}:2025-09-01"
+  count     Int      @default(0)
+  expiresAt DateTime // TTL index at DB or Redis alternative
 }
