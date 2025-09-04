@@ -152,9 +152,9 @@
 				<Form.Button class="h-fit w-[180px] text-2xl " formaction="?/createPost">Submit</Form.Button
 				>
 				<Button
-					type="button"
+					type="submit"
 					class="h-fit w-[180px] border border-[var(--primary)] bg-white text-2xl text-black hover:bg-gray-100"
-					>Save</Button
+					formaction="?/saveDraft">Save Draft</Button
 				>
 			</div>
 

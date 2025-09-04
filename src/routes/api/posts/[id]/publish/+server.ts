@@ -11,10 +11,8 @@ export async function POST({ params }) {
 	if (!post?.currentRevision) throw error(404, 'Post not found or missing revision');
 	// RBAC & moderation checks here…
 
-	// // Render Tiptap JSON → HTML
-	// const rawHtml = await renderTiptapToHtml(post.currentRevision.content);
-
 	// pass html content to rawHtml variable
+	const rawHtml = post.currentRevision.content;
 
 	// rehype pipeline
 	const processor = createPostProcessor();
@@ -23,9 +21,9 @@ export async function POST({ params }) {
 		const file = await processor.process(rawHtml);
 		processed = String(file.value);
 	} catch (e) {
+		console.log(e);
 		throw error(409, {
-			message: 'PreprocessingError',
-			detail: 'Failed to process HTML for styling'
+			message: 'PreprocessingError: Failed to process HTML for styling'
 		});
 	}
 

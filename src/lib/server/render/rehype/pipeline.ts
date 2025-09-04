@@ -6,8 +6,6 @@ import rehypeSanitize from 'rehype-sanitize';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeExternalLinks from 'rehype-external-links';
-
-import { sanitizeSchema } from './plugins/sanitize';
 import { addClassesPlugin } from './plugins/addClasses';
 import { codeHighlight } from './plugins/codeHighlight';
 
@@ -16,7 +14,7 @@ export function createPostProcessor() {
 		unified()
 			// Input is trusted HTML from Tiptap renderer; we still parse+sanitize defensively
 			.use(rehypeParse, { fragment: true })
-			.use(rehypeSanitize, sanitizeSchema)
+			.use(rehypeSanitize)
 			.use(rehypeSlug) // adds id attributes to headings
 			.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
 			.use(rehypeExternalLinks, { target: '_blank', rel: ['noopener', 'noreferrer'] })

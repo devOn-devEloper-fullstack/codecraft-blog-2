@@ -13,7 +13,7 @@
 	console.log(data);
 </script>
 
-<h2 class="text-2xl font-bold">Post Title: {data.posts[index].postTitle}</h2>
+<h2 class="w-[80vw] text-2xl font-bold">Post Title: {data.posts[index].postTitle}</h2>
 <blockquote>{data.posts[index].excerpt}</blockquote>
 <span>{data.posts[index].tags}</span>
 <div>{@html syntax}</div>

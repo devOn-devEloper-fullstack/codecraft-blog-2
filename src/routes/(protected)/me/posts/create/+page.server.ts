@@ -1,6 +1,6 @@
 import { redirect, fail, error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { addPost } from '$lib/server/posts';
+import { addPost, setCurrentRevision } from '$lib/server/posts';
 import { auth } from '$lib/auth';
 import { superValidate, setError, message } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -13,6 +13,7 @@ import crypto from 'node:crypto';
 import { createImage, type NewImage, listImagesForKeys } from '$lib/server/images';
 import { authCheck, slugUnique } from '$lib/server/server-utilities';
 import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import type { Prisma } from '@prisma/client';
 
 function sanitizeFileName(name: string) {
 	return name.replace(/[^\w\-.]+/g, '_');
@@ -133,15 +134,17 @@ export const actions: Actions = {
 
 		// Attempt database record creation
 		try {
-			await addPost({
+			const newPost = await addPost({
 				postTitle: title,
 				slug,
 				contentHtml,
 				excerpt: excerpt,
 				tags,
 				published: false,
-				userId: session?.user.id
+				userId: session?.user.id,
+				status: 'SUBMITTED'
 			});
+			await setCurrentRevision(newPost.id, newPost.revisions[newPost.revisions.length - 1].id);
 			console.log('SUCCESS ✅ POST ADDED TO DATABASE');
 		} catch (error) {
 			console.log('Unexpected error occurred during post creation', error);
@@ -272,7 +275,7 @@ export const actions: Actions = {
 			indexInHtml: null
 		};
 
-		const uploaded = { key, encodedKey: encodeURIComponent(key) };
+		// const uploaded = { key, encodedKey: encodeURIComponent(key) };
 
 		try {
 			await createImage(toCreate);
@@ -283,7 +286,92 @@ export const actions: Actions = {
 			console.error('⛔ DB insert failed ⛔', e);
 			return fail(500, { error: `Failed to record uploaded images in database.` });
 		}
+	},
+	saveDraft: async ({ request }) => {
+		console.log('Server Action Initialized. ✅');
 
-		return { form: { success: { count: 1, items: uploaded } } };
+		// Check for a valid user session:
+		const session = await authCheck({ request });
+		if (!session?.user) throw redirect(302, '/auth/sign-in');
+
+		// Get and validate form data:
+		const form = await superValidate(request, zod4(formSchema));
+
+		if (!form.valid) {
+			console.log(
+				'Form is not valid. Retry your submission with inputs that match the schema file.',
+				'\nThe following data was submitted:',
+				'\n\x1b[31mPost Title:\x1b[0m',
+				form.data.title,
+				'\n\x1b[31mPost Slug:\x1b[0m',
+				form.data.slug,
+				'\n\x1b[31mPost Tags:\x1b[0m',
+				form.data.tags,
+				'\n\x1b[31mPost Content:\x1b[0m',
+				form.data.contentHtml,
+				'These are the following errors that were detected in the submission:',
+				form.errors
+			);
+			return fail(400, { form });
+		}
+
+		// Destructure form data to access submission data from user:
+		const { title, slug, contentHtml, excerpt, tags } = form.data;
+
+		// Review non-null fields for truthiness
+		if (!title || !slug || !contentHtml) {
+			console.log('Missing required fields ⛔');
+			console.log(
+				'\n\x1b[31mPost Title:\x1b[0m',
+				form.data.title,
+				'\n\x1b[31mPost Slug:\x1b[0m',
+				form.data.slug,
+				'\n\x1b[31mPost Tags:\x1b[0m',
+				form.data.tags,
+				'\n\x1b[31mPost Content:\x1b[0m',
+				form.data.contentHtml
+			);
+			return fail(400, {
+				message: 'Missing required fields',
+				values: { title, slug, tags }
+			});
+		}
+
+		// Verify uniqueness of slug value:
+		const slugUniqueCheck = await slugUnique(slug);
+
+		if (!slugUniqueCheck) {
+			const errorResponse = {
+				error: 'CONFLICT',
+				message: 'Slug already exists.',
+				conflict: {
+					field: 'slug',
+					value: slug
+				}
+			};
+			return fail(409, errorResponse);
+		}
+
+		// Attempt database record creation
+		try {
+			const newPost = await addPost({
+				postTitle: title,
+				slug,
+				contentHtml,
+				excerpt: excerpt,
+				tags,
+				published: false,
+				userId: session?.user.id,
+				status: 'DRAFT'
+			});
+			await setCurrentRevision(newPost.id, newPost.revisions[newPost.revisions.length - 1].id);
+			console.log('SUCCESS ✅ POST ADDED TO DATABASE');
+		} catch (error) {
+			console.log('Unexpected error occurred during post creation', error);
+			return setError(form, 'Unexpected error');
+		}
+
+		// Redirect to the newly created post
+		throw redirect(303, `/me/posts/edit/${slug}`);
 	}
 };
