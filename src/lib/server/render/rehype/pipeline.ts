@@ -8,13 +8,25 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeExternalLinks from 'rehype-external-links';
 import { addClassesPlugin } from './plugins/addClasses';
 import { codeHighlight } from './plugins/codeHighlight';
+import { defaultSchema } from 'hast-util-sanitize';
 
 export function createPostProcessor() {
 	return (
 		unified()
 			// Input is trusted HTML from Tiptap renderer; we still parse+sanitize defensively
 			.use(rehypeParse, { fragment: true })
-			.use(rehypeSanitize)
+			.use(rehypeSanitize, {
+				...defaultSchema,
+				tagNames: [
+					...(defaultSchema.tagNames || []),
+					'br' // ✅ explicitly allow <br>
+				],
+				attributes: {
+					...defaultSchema.attributes,
+					// You usually don’t need attributes for <br>, but you can add global ones if needed.
+					br: [...(defaultSchema.attributes?.br || []), ['className']]
+				}
+			})
 			.use(rehypeSlug) // adds id attributes to headings
 			.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
 			.use(rehypeExternalLinks, { target: '_blank', rel: ['noopener', 'noreferrer'] })

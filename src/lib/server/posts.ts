@@ -65,6 +65,7 @@ export async function getAllPostsByUser(userId: UserType) {
 	return await prisma.posts.findMany({
 		where: {
 			userId: userId
-		}
+		},
+		include: { User: true }
 	});
 }

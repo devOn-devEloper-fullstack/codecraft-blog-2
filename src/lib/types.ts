@@ -26,7 +26,8 @@ export type EditorSnippet = Snippet<[EditorTypes]>;
 export type EditorProps = {
 	editor: EditorTypes;
 	controlToolbar: EditorSnippet;
-	image: string;
-	htmlContent: string | undefined;
-	jsonContent: unknown;
+	image: string | null;
+	content: string;
+	htmlContent?: string | undefined;
+	jsonContent?: unknown;
 };

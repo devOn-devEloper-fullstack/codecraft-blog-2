@@ -143,6 +143,7 @@
 		<span class="py-2 text-xl font-semibold">Post Content</span>
 		<Editor
 			image={getSelectedImage()}
+			content="<p>Write something beautiful...</p>"
 			bind:htmlContent={$formData.contentHtml}
 			bind:jsonContent={$formData.contentJson}
 		/>

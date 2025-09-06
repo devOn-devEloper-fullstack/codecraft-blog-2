@@ -12,7 +12,7 @@ export async function POST({ params }) {
 	// RBAC & moderation checks here…
 
 	// pass html content to rawHtml variable
-	const rawHtml = post.currentRevision.content;
+	const rawHtml = post.currentRevision.content.replace(/ {3}/g, '\n');
 
 	// rehype pipeline
 	const processor = createPostProcessor();

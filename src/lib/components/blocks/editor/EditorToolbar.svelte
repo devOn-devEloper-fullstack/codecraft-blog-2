@@ -19,8 +19,10 @@
 	import Image from 'phosphor-svelte/lib/Image';
 	import { preventDefault } from 'svelte/legacy';
 
-	let { editor, image }: Omit<EditorProps, 'controlToolbar' | 'htmlContent' | 'jsonContent'> =
-		$props();
+	let {
+		editor,
+		image
+	}: Omit<EditorProps, 'controlToolbar' | 'htmlContent' | 'jsonContent' | 'content'> = $props();
 
 	const setLink = () => {
 		const previousUrl = editor?.getAttributes('link').href;
@@ -168,7 +170,11 @@
 	<button
 		onclick={(e) => {
 			e.preventDefault;
-			editor?.chain().focus().setImage({ src: image }).run();
+			editor
+				?.chain()
+				.focus()
+				.setImage({ src: image ?? '' })
+				.run();
 		}}
 		class="toolbar-button"
 		type="button"
