@@ -26,10 +26,43 @@
 
 	let formData = $derived(formCreate.form);
 	let errors = $derived(formCreate.errors);
+	let enhance = $derived(formCreate.enhance);
+
+	async function onSubmit(event: Event) {
+		event.preventDefault();
+		formCreate.submit();
+
+		const formSubmitData = {
+			postTitle: $formData.postTitle,
+			slug: $formData.slug,
+			excerpt: $formData.excerpt,
+			tags: $formData.tags
+		};
+
+		try {
+			const response = await fetch(`http://localhost:5173/api/posts/${metadata.form.id}/meta`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formSubmitData)
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to submit');
+			}
+
+			const result = await response.json();
+			console.log('Success:', result);
+		} catch (e) {
+			console.error('⛔ Error:', e);
+		}
+	}
 </script>
 
 <Drawer bind:open={getDrawerState, setDrawerState} placement="left">
-	<form>
+	
+	<form onsubmit={() => onSubmit}>
 		<h3 class="mb-2 text-3xl font-bold text-black">Edit Post Metadata</h3>
 		<p class="text-md mb-4 text-gray-400">
 			Update the fields below to change the metadata related to your post.

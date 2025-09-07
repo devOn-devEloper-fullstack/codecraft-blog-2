@@ -29,37 +29,37 @@ export const load: PageServerLoad = async ({ request }) => {
 
 	if (!session?.user) throw redirect(302, '/auth/sign-in');
 
-	const accessS3 = new ListObjectsV2Command({
-		Bucket: S3_BUCKET,
-		Prefix: `image-gallery/${session.user.id}`,
-		MaxKeys: 100
-	});
+	// const accessS3 = new ListObjectsV2Command({
+	// 	Bucket: S3_BUCKET,
+	// 	Prefix: `image-gallery/${session.user.id}`,
+	// 	MaxKeys: 100
+	// });
 
-	const imageObjects = await s3.send(accessS3);
-	const items = (imageObjects.Contents ?? [])
-		.filter((obj) => !!obj.Key)
-		.map((obj) => {
-			const key = obj.Key!;
-			return {
-				key,
-				// App-level URL that hides S3 and will mint a presigned URL at request time
-				url: `/img/${encodeKey(key)}`
-			};
-		});
-	const keys: Array<string> = [];
-	items.forEach((item) => keys.push(item.key));
+	// const imageObjects = await s3.send(accessS3);
+	// const items = (imageObjects.Contents ?? [])
+	// 	.filter((obj) => !!obj.Key)
+	// 	.map((obj) => {
+	// 		const key = obj.Key!;
+	// 		return {
+	// 			key,
+	// 			// App-level URL that hides S3 and will mint a presigned URL at request time
+	// 			url: `/img/${encodeKey(key)}`
+	// 		};
+	// 	});
+	// const keys: Array<string> = [];
+	// items.forEach((item) => keys.push(item.key));
 
-	const imageGalleryDB = await listImagesForKeys(keys);
+	// const imageGalleryDB = await listImagesForKeys(keys);
 
-	const itemDB = items.map((item) => {
-		const images = imageGalleryDB.find((image) => image.key === item.key);
-		return { ...item, ...images };
-	});
+	// const itemDB = items.map((item) => {
+	// 	const images = imageGalleryDB.find((image) => image.key === item.key);
+	// 	return { ...item, ...images };
+	// });
 
 	return {
 		form: await superValidate(zod4(formSchema)),
 		imageForm: await superValidate(zod4(imageUploadSchema)),
-		itemDB
+		// itemDB
 	};
 };
 

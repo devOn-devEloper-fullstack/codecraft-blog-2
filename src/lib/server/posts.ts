@@ -8,7 +8,7 @@ type EditPostBody = {
 	contentHtml: string;
 };
 export async function addPost(input: PostInput) {
-	const { published, ...data } = input;
+	const { published, User, ...data } = input; // Exclude User property if present
 	return prisma.posts.create({
 		data: {
 			...data,
@@ -96,6 +96,46 @@ export async function updatePostBody(id: string, data: EditPostBody) {
 		},
 		include: {
 			revisions: true
+		}
+	});
+}
+
+export async function updatePostMetadata (id: string, data: Partial<PostInput>) {
+	// Exclude userId from update data, as Prisma does not allow updating userId
+	const { userId, ...updateData } = data;
+	return await prisma.posts.update({
+		where: {
+			id: id
+		},
+		data: {
+			...updateData
+		}
+	});
+}
+
+export async function publishPost(id: string, data: string) {
+	return await prisma.posts.update({
+		where: {
+			id: id
+		},
+		data: {
+			contentHtml: data,
+			published: true,
+			status: 'PUBLISHED',
+			publishedAt: new Date(),
+			revisions: {
+				create: [
+					{
+						content: data,
+						summary: null,
+						createdBy: ''
+					}
+				]
+			}
+		},
+		include: {
+			revisions: true	
+
 		}
 	});
 }

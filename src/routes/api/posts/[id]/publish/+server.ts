@@ -2,6 +2,7 @@
 import { json, error } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
 import { createPostProcessor } from '$lib/server/render/rehype/pipeline';
+import { publishPost, setCurrentRevision } from '$lib/server/posts';
 
 export async function POST({ params }) {
 	const post = await prisma.posts.findUnique({
@@ -27,14 +28,9 @@ export async function POST({ params }) {
 		});
 	}
 
-	const updated = await prisma.posts.update({
-		where: { id: post.id },
-		data: {
-			contentHtml: processed,
-			status: 'PUBLISHED',
-			publishedAt: new Date()
-		}
-	});
+	const updated = await publishPost(post.id, processed);
+
+	const currentRevision = await setCurrentRevision(post.id, updated.revisions[updated.revisions.length - 1].id);
 
 	return json({ id: updated.id, status: updated.status, publishedAt: updated.publishedAt });
 }
