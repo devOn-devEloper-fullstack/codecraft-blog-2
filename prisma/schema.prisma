@@ -21,7 +21,7 @@ model User {
   updatedAt     DateTime           @updatedAt
   image         String?
   emailVerified Boolean
-  role          String             @default("User")
+  role          UserRoles          @default(User)
   sessions      Session[]
   accounts      Account[]
   settings      UserSettings?
@@ -256,4 +256,11 @@ model AbuseCounter {
   bucket    String   @unique // e.g., "report:ip:{hash}:2025-09-01"
   count     Int      @default(0)
   expiresAt DateTime // TTL index at DB or Redis alternative
+}
+
+enum UserRoles {
+  User
+  Creator
+  Moderator
+  Admin
 }

@@ -3,6 +3,10 @@ import type { User, Prisma } from '@prisma/client';
 
 type PostInput = Prisma.PostsCreateInput & { userId: string };
 type UserType = User['id'];
+
+type EditPostBody = {
+	contentHtml: string;
+};
 export async function addPost(input: PostInput) {
 	const { published, ...data } = input;
 	return prisma.posts.create({
@@ -57,6 +61,9 @@ export async function getPostsById(postId: string) {
 	return await prisma.posts.findUnique({
 		where: {
 			id: postId
+		},
+		include: {
+			User: true
 		}
 	});
 }
@@ -67,5 +74,28 @@ export async function getAllPostsByUser(userId: UserType) {
 			userId: userId
 		},
 		include: { User: true }
+	});
+}
+
+export async function updatePostBody(id: string, data: EditPostBody) {
+	return await prisma.posts.update({
+		where: {
+			id: id
+		},
+		data: {
+			contentHtml: data.contentHtml,
+			revisions: {
+				create: [
+					{
+						content: data.contentHtml,
+						summary: null,
+						createdBy: ''
+					}
+				]
+			}
+		},
+		include: {
+			revisions: true
+		}
 	});
 }

@@ -21,8 +21,8 @@
 	let {
 		image,
 		content,
-		htmlContent = $bindable(''),
-		jsonContent = $bindable('')
+		htmlContent = $bindable(),
+		jsonContent = $bindable()
 	}: Omit<EditorProps, 'editor' | 'controlToolbar'> = $props();
 	let contentHTML: string = $state('');
 

@@ -24,7 +24,7 @@ export const POST: RequestHandler = async ({ request, setHeaders }) => {
 	}
 
 	// TODO: Add contentJson to WYSIWYG Editor and destructure here
-	const { title, slug, tags, contentHtml } = validated.data;
+	const { title, slug, excerpt, tags, contentHtml } = validated.data;
 
 	// Validate slug is unique
 	const slugUniqueCheck = await slugUnique(slug);
@@ -47,7 +47,7 @@ export const POST: RequestHandler = async ({ request, setHeaders }) => {
 			postTitle: title,
 			slug,
 			contentHtml,
-			excerpt: undefined,
+			excerpt,
 			tags,
 			published: false,
 			userId: session?.user.id
