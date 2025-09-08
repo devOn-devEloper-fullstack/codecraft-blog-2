@@ -1,5 +1,6 @@
 test-results
 node_modules
+docker-data
 
 # Output
 .output

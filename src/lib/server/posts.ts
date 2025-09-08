@@ -20,7 +20,8 @@ export async function addPost(input: PostInput) {
 					{
 						content: data.contentHtml,
 						summary: null,
-						createdBy: ''
+						createdBy: '',
+						version: 1
 					}
 				]
 			}
@@ -63,7 +64,8 @@ export async function getPostsById(postId: string) {
 			id: postId
 		},
 		include: {
-			User: true
+			User: true,
+			currentRevision: true
 		}
 	});
 }
@@ -89,7 +91,8 @@ export async function updatePostBody(id: string, data: EditPostBody) {
 					{
 						content: data.contentHtml,
 						summary: null,
-						createdBy: ''
+						createdBy: '',
+						version: await prisma.revision.count({where: { postId: id } }).then(count => count + 1)
 					}
 				]
 			}
@@ -128,7 +131,8 @@ export async function publishPost(id: string, data: string) {
 					{
 						content: data,
 						summary: null,
-						createdBy: ''
+						createdBy: '',
+						version: await prisma.revision.count({where: { postId: id } }).then(count => count + 1)
 					}
 				]
 			}
@@ -138,4 +142,15 @@ export async function publishPost(id: string, data: string) {
 
 		}
 	});
+}
+
+export async function setPostStatus(id: string, status: 'DRAFT' | 'PUBLISHED' | 'REJECTED' | 'SUBMITTED') {
+	return await prisma.posts.update({
+		where: {
+			id: id
+		},
+		data: {
+			status: status
+		}
+	})
 }

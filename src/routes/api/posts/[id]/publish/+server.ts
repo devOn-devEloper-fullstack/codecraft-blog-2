@@ -1,16 +1,36 @@
 // src/routes/api/posts/[id]/publish/+server.ts
-import { json, error } from '@sveltejs/kit';
+import { json, error, type RequestHandler } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
 import { createPostProcessor } from '$lib/server/render/rehype/pipeline';
-import { publishPost, setCurrentRevision } from '$lib/server/posts';
+import { getPostsById, publishPost, setCurrentRevision } from '$lib/server/posts';
+import { authCheck } from '$lib/server/server-utilities';
 
-export async function POST({ params }) {
-	const post = await prisma.posts.findUnique({
-		where: { id: params.id },
-		include: { currentRevision: true }
-	});
+export const POST: RequestHandler = async ({ params, request }) => {
+	const session = await authCheck({ request });
+
+	// Validate authenticated User
+	if (!session?.user?.id) {
+		return new Response(JSON.stringify({ error: 'UNAUTHORIZED' }), { status: 401 });
+	}
+
+	// Fetch Post and current Revision from DB
+	const post = await getPostsById(params.id as string);
+
+	// Validate RBAC and Post Ownership
+
+	// TODO: Refactor to verify that the user session contains a role of 'Moderator' or 'Admin' (i.e., no requests to this endpoint should be from creators or users)
+	if (
+		session.user.id !== post?.userId &&
+		(post?.User?.role !== 'Admin' && post?.User?.role !== 'User')
+	) {
+		return new Response(JSON.stringify({ error: 'ACCESS RESTRICTED' }), { status: 403 });
+	}
+
+	// Check if post and currentRevision exist
 	if (!post?.currentRevision) throw error(404, 'Post not found or missing revision');
-	// RBAC & moderation checks here…
+
+	// TODO: Validate post status is 'Submitted' before publishing (i.e., not already published, draft, or rejected).
+
 
 	// pass html content to rawHtml variable
 	const rawHtml = post.currentRevision.content.replace(/ {3}/g, '\n');
@@ -28,9 +48,20 @@ export async function POST({ params }) {
 		});
 	}
 
-	const updated = await publishPost(post.id, processed);
-
-	const currentRevision = await setCurrentRevision(post.id, updated.revisions[updated.revisions.length - 1].id);
-
-	return json({ id: updated.id, status: updated.status, publishedAt: updated.publishedAt });
+	try {
+		const updated = await publishPost(post.id, processed);
+		await setCurrentRevision(post.id, updated.revisions[updated.revisions.length - 1].id);
+		return json({
+			message: 'Post published successfully',
+			id: updated.id,
+			status: updated.status,
+			publishedAt: updated.publishedAt,
+			published: updated.published
+		}, { status: 200 });
+	} catch (e) {
+		console.log(e);
+		throw error(409, {
+			message: 'Post publishing failed'
+		});
+	}
 }

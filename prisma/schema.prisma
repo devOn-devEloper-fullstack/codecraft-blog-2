@@ -28,7 +28,6 @@ model User {
   authorPosts   Posts[]            @relation("Author")
   editorPosts   Posts[]            @relation("Editor")
   images        PostPictures[]
-  moderation    ModerationEvent[]
   trustScore    AuthorTrustMetric?
 }
 
@@ -93,7 +92,9 @@ model Posts {
   revisions       Revision[] @relation("Revisions")
 
   flags      ContentFlag[]
-  moderation ModerationEvent[]
+  moderation ModerationJob[]
+  review     ReviewTask[]
+  decisions  Decision[]
   reports    Report[]
 }
 
@@ -103,6 +104,8 @@ model Revision {
   post                  Posts?        @relation("Revisions", fields: [postId], references: [id])
   content               String
   summary               String?
+  version               Int           @default(1)
+  status                PostStatus    @default(DRAFT)
   createdBy             String
   createdAt             DateTime      @default(now())
   contentFlag           ContentFlag[]
@@ -148,6 +151,8 @@ enum ReportStatus {
 enum PostStatus {
   DRAFT
   SUBMITTED
+  PENDING_AUTO
+  PENDING_HUMAN
   APPROVED
   REJECTED
   PUBLISHED
@@ -212,31 +217,77 @@ model PostPictures {
   @@index([postId])
 }
 
-model ModerationEvent {
-  id      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  postId  String           @db.Uuid
-  actorId String           @db.Uuid
-  actor   User             @relation(fields: [actorId], references: [id])
-  action  ModerationAction
-  reason  String?
 
-  ruleVersion Int? // for future rule engines (kept for audit)
-  provider    String? // "openai"
-  diffPatch   Json?
+model ModerationJob {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId          String     @db.Uuid
+  postVersion     Int
+  idempotencyKey  String     @unique
+  provider        String     @default("openai")
+  providerModel   String
+  requestHash     String 
+  status          JobStatus  @default(QUEUED)
+  result          Json?
+  error           String?
+  attempts        Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
-  createdAt DateTime @default(now())
-
-  post Posts @relation(fields: [postId], references: [id])
+  post            Posts      @relation(fields: [postId], references: [id])
+  @@index([postId, postVersion])
+  @@unique([postId, postVersion])
 }
 
-enum ModerationAction {
+enum JobStatus {
+  QUEUED
+  RUNNING
+  SUCCESSFUL
+  FAILED
+}
+
+model ReviewTask {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId      String    @db.Uuid
+  postVersion Int
+  assigneeId  String?
+  reason      String
+  status      TaskStatus @default(OPEN)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  post        Posts     @relation(fields: [postId], references: [id])
+  
+  @@unique([postId, postVersion])
+  @@index([status, createdAt])
+}
+
+enum TaskStatus {
+  OPEN
+  CLAIMED
+  RESOLVED
+}
+
+model Decision {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId      String    @db.Uuid
+  postVersion Int
+  decidedBy   String    // userId or 'system'
+  outcome     DecisionOutcome
+  rationale   String?
+  data        Json?
+  createdAt   DateTime  @default(now())
+
+  post        Posts     @relation(fields: [postId], references: [id])
+  
+  @@index([postId, postVersion])
+}
+
+enum DecisionOutcome {
   APPROVE
   REJECT
-  REDACT
   ESCALATE
-  QUARANTINE
-  UNQUARANTINE
 }
+
 
 model AuthorTrustMetric {
   id              String    @id @default(cuid())
@@ -263,4 +314,13 @@ enum UserRoles {
   Creator
   Moderator
   Admin
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  subject   String   // e.g., "ModerationJob:xyz"
+  action    String   // e.g., "ENQUEUED", "PROCESSED", "ESCALATED", "CLAIMED"
+  actorId   String?  // null = system
+  meta      Json?
+  createdAt DateTime @default(now())
 }
