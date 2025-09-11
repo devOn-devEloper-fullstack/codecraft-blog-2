@@ -98,7 +98,8 @@ export async function updatePostBody(id: string, data: EditPostBody) {
 			}
 		},
 		include: {
-			revisions: true
+			revisions: true,
+			currentRevision: true
 		}
 	});
 }

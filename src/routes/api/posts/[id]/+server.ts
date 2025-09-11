@@ -1,5 +1,6 @@
 import { updatePostBody, setCurrentRevision, getPostsById } from '$lib/server/posts';
 import { authCheck } from '$lib/server/server-utilities';
+import type { RequestHandler } from '@sveltejs/kit';
 import { formSchema } from './../../../(protected)/me/posts/edit/[slug]/formSchema';
 
 export const PATCH: RequestHandler = async ({ request, params }) => {
@@ -13,11 +14,11 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 	}
 
 	// Check post to validate user is allowed to edit post (RBAC and Post Owner validation)
-	const postInput = await getPostsById(params.id);
+	const postInput = await getPostsById(params.id as string);
 
 	if (
-		session?.user.id !== postInput.userId &&
-		(postInput.User.role === 'Creator' || postInput.User.role === 'Admin')
+		session?.user.id !== postInput?.userId &&
+		(postInput?.User?.role === 'Creator' || postInput?.User?.role === 'Admin')
 	) {
 		return new Response(JSON.stringify({ error: 'ACCESS RESTRICTED' }), { status: 403 });
 	}
@@ -37,7 +38,7 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 	const { contentHtml } = validated.data;
 
 	try {
-		const post = await updatePostBody(params.id, {
+		const post = await updatePostBody(params.id as string, {
 			contentHtml
 		});
 

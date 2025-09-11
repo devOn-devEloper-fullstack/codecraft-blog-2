@@ -6,6 +6,40 @@
     let tasks = $derived(data.tasks);
     let claimed = $derived(data.claimed);
 
+    let resolve = $state(false)
+
+
+    async function onSubmit(event: Event) {
+		event.preventDefault();
+
+		const formData = new FormData(event.target as HTMLFormElement);
+        const formSubmitData = {
+            taskId: (event.target as Element)?.closest('li')?.getAttribute('data-task-id'),
+            status: formData.get('decision'),
+            rationale: formData.get('rationale')
+        }
+
+
+		try {
+			const response = await fetch(`http://localhost:5173/api/moderation/decisions`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formSubmitData)
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to submit');
+			}
+
+			const result = await response.json();
+			console.log('Success:', result);
+		} catch (e) {
+			console.error('⛔ Error:', e);
+		}
+	}
+
 
 
 </script>
@@ -30,12 +64,31 @@
     <p class="mt-4">No claimed moderation tasks.</p>
 {:else}
     <ul class="mt-4 space-y-4">
-        {#each claimed as task}
-            <li class="border p-4 rounded-lg shadow-sm">
+        {#each claimed as task (task.id)}
+            <li class="border p-4 rounded-lg shadow-sm" data-task-id={task.id}>
                 <h3 class="text-xl font-semibold">{task.post.postTitle}</h3>
                 <p class="mt-2">Flag Reason: {task.reason.substring(12)}</p>
                 <p class="mt-2">{@html task.post.contentHtml}</p>
-                <button class="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Resolve Task</button>
+                
+                {#if resolve}
+                    <form class="mt-4 space-y-2" method="POST" onsubmit={(e) => onSubmit(e)}>
+                        <div>
+                            <label class="block mb-1 font-medium" for="decision">Decision</label>
+                            <select class="w-full border rounded px-3 py-2" id="decision" name="decision">
+                                <option value="APPROVE">Approve</option>
+                                <option value="REJECT">Reject</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block mb-1 font-medium" for="rationale">Rationale</label>
+                            <textarea class="w-full border rounded px-3 py-2" rows="4" placeholder="Provide your rationale..." id="rationale" name="rationale"></textarea>
+                        </div>
+                        <button type="submit" class="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Submit Decision</button>
+                    </form>
+                {:else}
+                    <button class="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700" onclick={()=> resolve = true}>Resolve Task</button>
+                {/if}
+                
             </li>
         {/each}
     </ul>

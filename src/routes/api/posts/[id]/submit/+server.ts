@@ -1,7 +1,8 @@
-import { getPostsById, setPostStatus } from "$lib/server/posts";
+import { getPostsById, setPostStatus, updatePostBody } from "$lib/server/posts";
 import { authCheck } from "$lib/server/server-utilities";
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import { enqueueAutoModeration } from "$lib/workers/autoModeration";
+import { createPostProcessor } from "$lib/server/render/rehype/pipeline";
 
 export const POST: RequestHandler = async ({ params, request }) => {
 
@@ -35,11 +36,26 @@ export const POST: RequestHandler = async ({ params, request }) => {
         return error(409, { message: "Post is not in a state that can be submitted" });
     }
 
-    // TODO: Add HTML processing here to assign classes and sanitize
+   const rawHtml = post.currentRevision?.content.replace(/ {3}/g, '\n');
+   
+    // Rehype Pipeline
+    const processor = createPostProcessor();
+    let processed: string;
+    try {
+        const file = await processor.process(rawHtml);
+        processed = String(file.value);
+    } catch (e) {
+        console.log(e);
+        throw error(409, {
+            message: 'PreprocessingError: Failed to process HTML for styling'
+        });
+    }
 
     try {
         const submitted = await setPostStatus(post.id, 'SUBMITTED');
-        await enqueueAutoModeration(post.id, post.currentRevision?.version || 1);
+        const updated = await updatePostBody(post.id, { contentHtml: processed });
+
+        await enqueueAutoModeration(post.id, updated.currentRevision?.version || 1);
         return json({
             message: "Post status was successfully set to submitted",
             id: submitted.id,
