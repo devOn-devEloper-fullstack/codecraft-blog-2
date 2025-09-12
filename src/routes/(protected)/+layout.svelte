@@ -16,6 +16,7 @@
 	import type { LayoutProps } from './$types';
 	import { Avatar, button } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
+	import { authClient } from '$lib/auth-client';
 
 	let { children, data }: LayoutProps = $props();
 	let { session } = data;
@@ -128,7 +129,7 @@
 					>{getUserInitials(user.name)}</Avatar
 				>
 				<button
-					class="rounded bg-[var(--primary)] px-4 py-2 font-semibold text-white hover:bg-[var(--primary-500)] dark:bg-[var(--primary-500)] dark:hover:bg-[var(--primary-300)]"
+					class="rounded bg-[var(--primary)] px-4 py-2 font-semibold text-white hover:bg-[var(--primary-500)] dark:bg-[var(--primary-500)] dark:hover:bg-[var(--primary-300)]" onclick={() => authClient.signOut()}
 					>Logout</button
 				>
 			</div>

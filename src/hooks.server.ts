@@ -13,7 +13,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.user = session.user;
 	}
 
-	console.log(`DEBUG: Current user is ${event.locals.user.email}`);
 
 	return svelteKitHandler({ event, resolve, auth, building });
 };

@@ -20,6 +20,9 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.1",
     "@eslint/compat": "^1.2.5",
