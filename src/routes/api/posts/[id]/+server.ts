@@ -3,7 +3,6 @@ import { authCheck } from '$lib/server/server-utilities';
 import { error, json, type RequestHandler } from '@sveltejs/kit';
 import { formSchema } from './../../../(protected)/me/posts/edit/[slug]/formSchema';
 
-
 /**
  * API Endpoint to edit an existing post body
  * @param param0 - The request parameters
@@ -17,7 +16,6 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 	// Checks for authorized users
 	if (!session?.user?.id) {
 		return error(401, 'UNAUTHORIZED');
-		
 	}
 
 	// Check post to validate user is allowed to edit post (RBAC and Post Owner validation)
@@ -27,7 +25,6 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 		session?.user.id !== postInput?.userId &&
 		(postInput?.User?.role === 'Creator' || postInput?.User?.role === 'Admin')
 	) {
-
 		return error(403, 'ACCESS RESTRICTED');
 	}
 
@@ -65,8 +62,32 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 
 		return json(createResponseBody, { status: 200 });
 	} catch (err) {
+		console.error('⛔ Unexpected error occurred while attempting to edit the provided post.', err);
+		const errorResponse = {
+			message: err instanceof Error ? err.message : String(err)
+		};
+		return error(500, errorResponse);
+	}
+};
+
+/**
+ * API Endpoint to get a post by ID
+ * @param param0 - The request parameters
+ * @returns A JSON response containing the requested post
+ */
+
+export const GET: RequestHandler = async ({ params }) => {
+	try {
+		const post = await getPostsById(params.id as string);
+
+		if (!post) {
+			return error(404, 'POST NOT FOUND');
+		}
+
+		return json({ post }, { status: 200 });
+	} catch (err) {
 		console.error(
-			'⛔ Unexpected error occurred while attempting to edit the provided post.',
+			'⛔ Unexpected error occurred while attempting to retrieve the requested post.',
 			err
 		);
 		const errorResponse = {

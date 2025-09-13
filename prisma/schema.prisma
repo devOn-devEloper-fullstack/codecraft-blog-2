@@ -23,6 +23,7 @@ model User {
   authorPosts   Posts[]            @relation("Author")
   sessions      Session[]
   settings      UserSettings?
+  likes         PostLike[]
 }
 
 model Session {
@@ -87,6 +88,11 @@ model Posts {
   review          ReviewTask[]
   currentRevision Revision?       @relation("Current Revision")
   revisions       Revision[]      @relation("Revisions")
+  stats           PostStats?
+  likes           PostLike[]
+  views           PostViewEvent[]
+  viewAgg         PostViewAgg[]
+  comments        Comment[]
 }
 
 model Revision {
@@ -227,6 +233,74 @@ model AuthorTrustMetric {
   user            User      @relation(fields: [userId], references: [id])
 }
 
+model PostStats {
+  postId       String @id @db.Uuid
+  viewCount    BigInt @default(0)
+  likeCount    BigInt @default(0)
+  commentCount BigInt @default(0)
+  post         Posts  @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  post      Posts    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+  @@index([postId, createdAt])
+}
+
+model PostViewEvent {
+  id            String   @id @default(cuid())
+  postId        String   @db.Uuid
+  userId        String?  @db.Uuid
+  anonHash      String?
+  ts            DateTime @default(now())
+  tVisibleMs    Int?
+  scrollPercent Float?
+  uaHash        String?
+  ipHash        String?
+  post          Posts    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, ts])
+}
+
+model PostViewAgg {
+  id      String   @id @default(cuid())
+  postId  String   @db.Uuid
+  date    DateTime // start of hour/day
+  bucket  String // 'hourly' | 'daily'
+  total   Int
+  uniques Int
+  post    Posts    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, date, bucket])
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  postId    String        @db.Uuid
+  parentId  String?
+  userId    String
+  body      String        @db.Text
+  status    CommentStatus @default(PUBLISHED)
+  createdAt DateTime      @default(now())
+  editedAt  DateTime?
+  deletedAt DateTime?
+
+  // For efficient trees
+  rootId String? // id of top-level comment; equals id for roots
+
+  post Posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([rootId, createdAt])
+}
+
 model AbuseCounter {
   id        String   @id @default(cuid())
   bucket    String   @unique
@@ -241,6 +315,12 @@ model AuditLog {
   actorId   String?
   meta      Json?
   createdAt DateTime @default(now())
+}
+
+enum CommentStatus {
+  PUBLISHED
+  HIDDEN
+  DELETED
 }
 
 enum ReportStatus {
