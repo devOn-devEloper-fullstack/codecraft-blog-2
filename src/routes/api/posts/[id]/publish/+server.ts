@@ -5,12 +5,17 @@ import { createPostProcessor } from '$lib/server/render/rehype/pipeline';
 import { getPostsById, publishPost, setCurrentRevision } from '$lib/server/posts';
 import { authCheck } from '$lib/server/server-utilities';
 
+/**
+ * API Endpoint to publish an existing post draft
+ * @param param0 - The request parameters
+ * @returns A JSON response indicating the result of the operation
+ */
 export const POST: RequestHandler = async ({ params, request }) => {
 	const session = await authCheck({ request });
 
 	// Validate authenticated User
 	if (!session?.user?.id) {
-		return new Response(JSON.stringify({ error: 'UNAUTHORIZED' }), { status: 401 });
+		return error(401, 'UNAUTHORIZED');
 	}
 
 	// Fetch Post and current Revision from DB
@@ -23,11 +28,12 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		session.user.id !== post?.userId &&
 		(post?.User?.role !== 'Admin' && post?.User?.role !== 'User')
 	) {
-		return new Response(JSON.stringify({ error: 'ACCESS RESTRICTED' }), { status: 403 });
+
+		return error(403, 'ACCESS RESTRICTED');
 	}
 
 	// Check if post and currentRevision exist
-	if (!post?.currentRevision) throw error(404, 'Post not found or missing revision');
+	if (!post?.currentRevision) return error(404, 'Post not found or missing revision');
 
 	// TODO: Validate post status is 'Submitted' before publishing (i.e., not already published, draft, or rejected).
 
@@ -43,7 +49,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		processed = String(file.value);
 	} catch (e) {
 		console.log(e);
-		throw error(409, {
+		return error(409, {
 			message: 'PreprocessingError: Failed to process HTML for styling'
 		});
 	}
@@ -60,7 +66,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		}, { status: 200 });
 	} catch (e) {
 		console.log(e);
-		throw error(409, {
+		return error(409, {
 			message: 'Post publishing failed'
 		});
 	}

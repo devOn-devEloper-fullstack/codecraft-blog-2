@@ -2,6 +2,12 @@ import { getPostsById, setPostStatus } from "$lib/server/posts";
 import { authCheck } from "$lib/server/server-utilities";
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 
+
+/**
+ * API Endpoint to reject an existing post
+ * @param param0 - The request parameters
+ * @returns A JSON response indicating the result of the operation
+ */
 export const POST: RequestHandler = async ({ params, request }) => {
     const session = await authCheck({ request });
 

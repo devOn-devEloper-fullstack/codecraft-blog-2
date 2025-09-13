@@ -150,7 +150,7 @@
 
 		<div class="flex w-full flex-row items-center justify-between">
 			<div class="mx-6 mt-6 flex w-[35%] flex-row justify-between gap-6">
-				<Form.Button class="h-fit w-[180px] text-2xl " formaction="?/createPost">Submit</Form.Button
+				<Form.Button class="h-fit w-[180px] text-2xl " formaction="?/createPost" type="submit" onclick={() => onSubmit()}>Submit</Form.Button
 				>
 				<Button
 					type="submit"

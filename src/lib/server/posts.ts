@@ -7,18 +7,20 @@ type UserType = User['id'];
 type EditPostBody = {
 	contentHtml: string;
 };
-export async function addPost(input: PostInput) {
-	const { published, User, ...data } = input; // Exclude User property if present
+export async function addPost(input: PostInput & { contentHtml: string }) {
+	// Exclude User and editor properties if present
+	const { published, User, editor, contentHtml, ...rest } = input;
 	return prisma.posts.create({
 		data: {
-			...data,
+			...rest,
+			contentHtml: contentHtml,
 			published: !!published,
 			publishedAt: published ? new Date() : null,
 			userId: input.userId,
 			revisions: {
 				create: [
 					{
-						content: data.contentHtml,
+						content: contentHtml,
 						summary: null,
 						createdBy: '',
 						version: 1
@@ -153,5 +155,12 @@ export async function setPostStatus(id: string, status: 'DRAFT' | 'PUBLISHED' | 
 		data: {
 			status: status
 		}
+	})
+}
+
+export async function getAllPublishedPosts(limit = 10) {
+	return await prisma.posts.findMany({
+		where: { published: true },
+		take: limit
 	})
 }

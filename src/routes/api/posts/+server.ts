@@ -2,25 +2,37 @@ import { authCheck } from '$lib/server/server-utilities';
 import type { RequestHandler } from './$types';
 import { formSchema } from './../../(protected)/me/posts/create/schema';
 import { slugUnique } from '$lib/server/server-utilities';
-import { addPost } from '$lib/server/posts';
+import { addPost, getAllPublishedPosts, setCurrentRevision } from '$lib/server/posts';
+import { error, json } from '@sveltejs/kit';
 
+/** 
+ * API Endpoint to create a new post draft
+ * Expects a JSON payload matching the formSchema
+ * Validates user authentication and slug uniqueness
+ * On success, creates a new post and returns its ID and slug
+ * On failure, returns appropriate HTTP error codes and messages
+ */
 export const POST: RequestHandler = async ({ request, setHeaders }) => {
 	const session = await authCheck({ request });
 
 	// Checks for authorized users
 	if (!session?.user?.id) {
-		return new Response(JSON.stringify({ error: 'UNAUTHORIZED' }), { status: 401 });
+		return error(401, 'UNAUTHORIZED');
+	}
+
+	// RBAC - Only Admins and Authors can create posts
+	if (session.user.role !== 'Admin' && session.user.role !== 'Author') {
+		return error(403, 'FORBIDDEN');
 	}
 
 	// Get JSON Payload and Validate against ZOD Schema
 	const payload = await request.json();
 	const validated = formSchema.safeParse(payload);
 
+
 	// Returns a JSON response with 422 status code if not a valid input
 	if (!validated.success) {
-		return new Response(JSON.stringify({ fieldErrors: validated.error.flatten().fieldErrors }), {
-			status: 422
-		});
+		return error(422, JSON.stringify({ fieldErrors: validated.error.flatten().fieldErrors }));
 	}
 
 	// TODO: Add contentJson to WYSIWYG Editor and destructure here
@@ -38,7 +50,8 @@ export const POST: RequestHandler = async ({ request, setHeaders }) => {
 				value: slug
 			}
 		};
-		return new Response(JSON.stringify({ errorResponse }), { status: 409 });
+
+		return error(409, errorResponse);
 	}
 
 	// Add post to database using addPost function. Catching any errors in the database add.
@@ -53,6 +66,8 @@ export const POST: RequestHandler = async ({ request, setHeaders }) => {
 			userId: session?.user.id
 		});
 
+		await setCurrentRevision(post.id, post.revisions[post.revisions.length - 1].id)
+
 		const createPostResponseBody = {
 			message: 'New post draft successfully saved',
 			post: {
@@ -63,15 +78,41 @@ export const POST: RequestHandler = async ({ request, setHeaders }) => {
 		};
 
 		setHeaders({ Location: `localhost:5173/me/edit/${post.id}` });
-		const createPostResponse = new Response(JSON.stringify(createPostResponseBody), {
-			status: 201
-		});
-		return createPostResponse;
-	} catch (error) {
-		console.log('Unexpected error occurred during post creation', error);
+
+		return json(createPostResponseBody, { status: 201, headers: { Location: `localhost:5173/me/edit/${post.id}` } });
+	} catch (err) {
+		console.error('Unexpected error occurred during post creation', err);
+		const errorMessage = err instanceof Error ? err.message : String(err);
 		const errorResponse = {
-			message: error
+			message: errorMessage
 		};
-		return new Response(JSON.stringify({ errorResponse }), { status: 500 });
+
+		return error(500, errorResponse);
 	}
 };
+
+/**
+ * API Endpoint to handle GET requests for posts
+ */
+
+export const GET: RequestHandler = async ({ url }) => {
+	const limit = parseInt(url.searchParams.get('limit') ?? '10');
+	const page = parseInt(url.searchParams.get('page') ?? '1');
+
+	const start = (page - 1) * limit;
+
+	try {
+		const posts = await getAllPublishedPosts(1000);
+		const paginatedPosts = posts.slice(start, start + limit);
+
+		return json({
+			page,
+			limit,
+			total: posts.length,
+			posts: paginatedPosts
+		}, { status: 200 });
+	} catch (err) {
+		console.error('Error fetching posts:', err);
+		return error(500, 'Internal Server Error');
+	}
+}

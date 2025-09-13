@@ -98,7 +98,7 @@
 			console.error('⛔ Error:', e);
 		}
 
-		window.location.reload();
+		window.location.reload();  
 	}
 </script>
 
@@ -136,6 +136,8 @@
 		<span class="absolute top-0 left-5 rounded-lg bg-blue-600 px-3 py-2 text-xl text-white">PENDING REVIEW</span>
 	{:else if data.posts[index].status === 'APPROVED'}
 		<span class="absolute top-0 left-5 rounded-lg bg-green-600 px-3 py-2 text-xl text-white">PUBLISHED</span>
+	{:else if data.posts[index].status === 'REJECTED'}
+		<span class="absolute top-0 left-5 rounded-lg bg-red-600 px-3 py-2 text-xl text-white">REJECTED</span>
 	{/if}
 
 	<PostMetaData metadata={propData} />

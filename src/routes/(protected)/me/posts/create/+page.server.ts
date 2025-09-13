@@ -64,7 +64,7 @@ export const load: PageServerLoad = async ({ request }) => {
 };
 
 export const actions: Actions = {
-	createPost: async ({ request }) => {
+	createPost: async ({ request, fetch }) => {
 		/**
 		 * createPost: A server action that takes a request from the post creation form and creates a blog post
 		 */
@@ -76,6 +76,8 @@ export const actions: Actions = {
 
 		// Get and validate form data:
 		const form = await superValidate(request, zod4(formSchema));
+
+		console.log(form.data)
 
 		if (!form.valid) {
 			console.log(
@@ -118,7 +120,7 @@ export const actions: Actions = {
 		}
 
 		// Verify uniqueness of slug value:
-		const slugUniqueCheck = await slugUnique(slug);
+		const slugUniqueCheck = await slugUnique(slug as string);
 
 		if (!slugUniqueCheck) {
 			const errorResponse = {
@@ -132,24 +134,80 @@ export const actions: Actions = {
 			return fail(409, errorResponse);
 		}
 
-		// Attempt database record creation
+		let postId: string;
+
 		try {
-			const newPost = await addPost({
-				postTitle: title,
-				slug,
-				contentHtml,
-				excerpt: excerpt,
-				tags,
-				published: false,
-				userId: session?.user.id,
-				status: 'SUBMITTED'
+			const response = await fetch('/api/posts', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					title,
+					slug,
+					contentHtml,
+					excerpt,
+					tags
+				})
 			});
-			await setCurrentRevision(newPost.id, newPost.revisions[newPost.revisions.length - 1].id);
-			console.log('SUCCESS ✅ POST ADDED TO DATABASE');
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				console.error('Error creating post:', errorData);
+				return setError(form, errorData.message || 'Failed to create post');
+			}
+
+			const responseData = await response.json();
+			console.log('Post created successfully:', responseData);
+			postId = responseData.post.id;
+
 		} catch (error) {
 			console.log('Unexpected error occurred during post creation', error);
 			return setError(form, 'Unexpected error');
 		}
+
+		try {
+			const response = await fetch(`/api/posts/${postId}/submit`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				console.error('Error submitting post:', errorData);
+				return setError(form, errorData.message || 'Failed to submit post');
+			}
+
+			const responseData = await response.json();
+			console.log('Post submitted successfully:', responseData);
+		} catch (error) {
+			console.log('Unexpected error occurred during post submission', error);
+			return setError(form, 'Unexpected error');
+		}
+
+	
+	
+
+		// Attempt database record creation
+		// try {
+		// 	const newPost = await addPost({
+		// 		postTitle: title,
+		// 		slug,
+		// 		contentHtml,
+		// 		excerpt: excerpt,
+		// 		tags,
+		// 		published: false,
+		// 		userId: session?.user.id,
+		// 		status: 'SUBMITTED'
+		// 	});
+		// 	await setCurrentRevision(newPost.id, newPost.revisions[newPost.revisions.length - 1].id);
+		// 	console.log('SUCCESS ✅ POST ADDED TO DATABASE');
+		// } catch (error) {
+		// 	console.log('Unexpected error occurred during post creation', error);
+		// 	return setError(form, 'Unexpected error');
+		// }
 
 		// Redirect to the newly created post
 		throw redirect(303, `/me/posts/edit/${slug}`);
@@ -287,7 +345,7 @@ export const actions: Actions = {
 			return fail(500, { error: `Failed to record uploaded images in database.` });
 		}
 	},
-	saveDraft: async ({ request }) => {
+	saveDraft: async ({ request, fetch }) => {
 		console.log('Server Action Initialized. ✅');
 
 		// Check for a valid user session:
@@ -338,7 +396,7 @@ export const actions: Actions = {
 		}
 
 		// Verify uniqueness of slug value:
-		const slugUniqueCheck = await slugUnique(slug);
+		const slugUniqueCheck = await slugUnique(slug as string);
 
 		if (!slugUniqueCheck) {
 			const errorResponse = {
@@ -352,24 +410,54 @@ export const actions: Actions = {
 			return fail(409, errorResponse);
 		}
 
-		// Attempt database record creation
 		try {
-			const newPost = await addPost({
-				postTitle: title,
-				slug,
-				contentHtml,
-				excerpt: excerpt,
-				tags,
-				published: false,
-				userId: session?.user.id,
-				status: 'DRAFT'
+			const response = await fetch('/api/posts', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					title,
+					slug,
+					contentHtml,
+					excerpt,
+					tags
+				})
 			});
-			await setCurrentRevision(newPost.id, newPost.revisions[newPost.revisions.length - 1].id);
-			console.log('SUCCESS ✅ POST ADDED TO DATABASE');
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				console.error('Error creating post:', errorData);
+				return setError(form, errorData.message || 'Failed to create post');
+			}
+
+			const responseData = await response.json();
+			console.log('Post created successfully:', responseData);
 		} catch (error) {
 			console.log('Unexpected error occurred during post creation', error);
 			return setError(form, 'Unexpected error');
 		}
+
+
+
+		// // Attempt database record creation
+		// try {
+		// 	const newPost = await addPost({
+		// 		postTitle: title,
+		// 		slug,
+		// 		contentHtml,
+		// 		excerpt: excerpt,
+		// 		tags,
+		// 		published: false,
+		// 		userId: session?.user.id,
+		// 		status: 'DRAFT'
+		// 	});
+		// 	await setCurrentRevision(newPost.id, newPost.revisions[newPost.revisions.length - 1].id);
+		// 	console.log('SUCCESS ✅ POST ADDED TO DATABASE');
+		// } catch (error) {
+		// 	console.log('Unexpected error occurred during post creation', error);
+		// 	return setError(form, 'Unexpected error');
+		// }
 
 		// Redirect to the newly created post
 		throw redirect(303, `/me/posts/edit/${slug}`);

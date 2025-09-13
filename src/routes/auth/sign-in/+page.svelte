@@ -62,7 +62,7 @@
 				<a href="/auth/forgot-password">Forgot password?</a>
 			</div>
 
-			<Form.Button disabled={$submitting} class="w-full">
+			<Form.Button disabled={$submitting} class="w-full" formaction="?/signIn" type="submit">
 				{$submitting ? 'Submitting...' : 'Submit'}
 			</Form.Button>
 			{#if $errors?._errors}

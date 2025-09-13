@@ -78,16 +78,23 @@ makeWorker<AutoJobData>(
     let outcome: 'PASS' | 'ESCALATE' | 'BLOCK' = 'PASS';
     let reason = '';
 
+    console.log(flagged)
+
     // Example routing policy (customize!):
     if (flagged) {
       // Hard block for sexual/minors if present in categories
+
+      const top = Object.entries(scores).sort((a,b) => b[1]-a[1])[0];
+      console.log(top)
       if (categories?.['sexual/minors']) {
         outcome = 'BLOCK';
         reason = 'openai.flag:sexual/minors';
+      } else if (top?.[1] > 0.9) {
+        outcome = 'BLOCK';
+        reason = `openai.flag:${top?.[0] ?? 'unknown'}`;
       } else {
         outcome = 'ESCALATE';
         // pick the highest score category as reason
-        const top = Object.entries(scores).sort((a,b) => b[1]-a[1])[0];
         reason = `openai.flag:${top?.[0] ?? 'unknown'}`;
       }
     }
