@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
 
 	let { endpoint }: { endpoint: string } = $props();
 
@@ -22,7 +23,7 @@
 	}
 
 	function onVisibilityChange() {
-		if (document.visibilityState === 'visible') {
+		if (window.document.visibilityState === 'visible') {
 			visibleSince = performance.now();
 		} else if (visibleSince !== null) {
 			const delta = performance.now() - visibleSince;
@@ -33,7 +34,7 @@
 
 	function onScroll() {
 		const scrolled = window.scrollY + window.innerHeight;
-		const percent = Math.min(100, (scrolled / document.body.scrollHeight) * 100);
+		const percent = Math.min(100, (scrolled / window.document.body.scrollHeight) * 100);
 
 		if (percent > maxScrollPercent) {
 			maxScrollPercent = percent;
@@ -81,13 +82,15 @@
 
 	onMount(() => {
 		visibleSince = performance.now();
-		document.addEventListener('visibilitychange', onVisibilityChange);
+		window.document.addEventListener('visibilitychange', onVisibilityChange);
 		window.addEventListener('scroll', onScroll, { passive: true });
 	});
 
 	onDestroy(() => {
-		document.removeEventListener('visibilitychange', onVisibilityChange);
-		window.removeEventListener('scroll', onScroll);
+		if (browser) {
+			window.document.removeEventListener('visibilitychange', onVisibilityChange);
+			window.removeEventListener('scroll', onScroll);
+		}
 		if (visibleSince !== null) {
 			const delta = performance.now() - visibleSince;
 			maybeSend(delta);

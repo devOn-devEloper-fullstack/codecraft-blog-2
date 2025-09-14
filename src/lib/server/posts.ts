@@ -161,6 +161,7 @@ export async function setPostStatus(id: string, status: 'DRAFT' | 'PUBLISHED' | 
 export async function getAllPublishedPosts(limit = 10) {
 	return await prisma.posts.findMany({
 		where: { published: true },
-		take: limit
+		take: limit,
+		include: { User: true, currentRevision: true }
 	})
 }
