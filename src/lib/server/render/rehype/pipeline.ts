@@ -1,13 +1,13 @@
 // src/lib/server/render/rehype/pipeline.ts
 import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
-import rehypeStringify from 'rehype-stringify';
 import rehypeSanitize from 'rehype-sanitize';
+import rehypeStringify from 'rehype-stringify';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeExternalLinks from 'rehype-external-links';
+import rehypeShiki from '@shikijs/rehype';
 import { addClassesPlugin } from './plugins/addClasses';
-import { codeHighlight } from './plugins/codeHighlight';
 import { defaultSchema } from 'hast-util-sanitize';
 
 export function createPostProcessor() {
@@ -54,7 +54,9 @@ export function createPostProcessor() {
 					hr: 'prose-hr'
 				}
 			})
-			.use(codeHighlight, { themeClass: 'hljs' }) // lowlight-based
+			.use(rehypeShiki, {
+				theme: 'github-dark-default'
+			})
 			.use(rehypeStringify, { allowDangerousHtml: false })
 	);
 }

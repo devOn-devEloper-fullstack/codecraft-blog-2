@@ -71,6 +71,7 @@ model Posts {
   slug            String
   excerpt         String?
   contentHtml     String
+  contentJson     Json
   tags            String[]
   published       Boolean         @default(false)
   status          PostStatus      @default(DRAFT)

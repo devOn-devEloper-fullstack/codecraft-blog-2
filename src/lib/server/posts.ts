@@ -14,6 +14,7 @@ export async function addPost(input: PostInput & { contentHtml: string }) {
 		data: {
 			...rest,
 			contentHtml: contentHtml,
+			contentJson: input.contentJson || null,
 			published: !!published,
 			publishedAt: published ? new Date() : null,
 			userId: input.userId,
@@ -94,7 +95,9 @@ export async function updatePostBody(id: string, data: EditPostBody) {
 						content: data.contentHtml,
 						summary: null,
 						createdBy: '',
-						version: await prisma.revision.count({where: { postId: id } }).then(count => count + 1)
+						version: await prisma.revision
+							.count({ where: { postId: id } })
+							.then((count) => count + 1)
 					}
 				]
 			}
@@ -106,7 +109,7 @@ export async function updatePostBody(id: string, data: EditPostBody) {
 	});
 }
 
-export async function updatePostMetadata (id: string, data: Partial<PostInput>) {
+export async function updatePostMetadata(id: string, data: Partial<PostInput>) {
 	// Exclude userId from update data, as Prisma does not allow updating userId
 	const { userId, ...updateData } = data;
 	return await prisma.posts.update({
@@ -135,19 +138,23 @@ export async function publishPost(id: string, data: string) {
 						content: data,
 						summary: null,
 						createdBy: '',
-						version: await prisma.revision.count({where: { postId: id } }).then(count => count + 1)
+						version: await prisma.revision
+							.count({ where: { postId: id } })
+							.then((count) => count + 1)
 					}
 				]
 			}
 		},
 		include: {
-			revisions: true	
-
+			revisions: true
 		}
 	});
 }
 
-export async function setPostStatus(id: string, status: 'DRAFT' | 'PUBLISHED' | 'REJECTED' | 'SUBMITTED') {
+export async function setPostStatus(
+	id: string,
+	status: 'DRAFT' | 'PUBLISHED' | 'REJECTED' | 'SUBMITTED'
+) {
 	return await prisma.posts.update({
 		where: {
 			id: id
@@ -155,7 +162,7 @@ export async function setPostStatus(id: string, status: 'DRAFT' | 'PUBLISHED' | 
 		data: {
 			status: status
 		}
-	})
+	});
 }
 
 export async function getAllPublishedPosts(limit = 10) {
@@ -163,5 +170,5 @@ export async function getAllPublishedPosts(limit = 10) {
 		where: { published: true },
 		take: limit,
 		include: { User: true, currentRevision: true }
-	})
+	});
 }

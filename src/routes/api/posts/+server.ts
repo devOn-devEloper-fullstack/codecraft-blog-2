@@ -5,7 +5,7 @@ import { slugUnique } from '$lib/server/server-utilities';
 import { addPost, getAllPublishedPosts, setCurrentRevision } from '$lib/server/posts';
 import { error, json } from '@sveltejs/kit';
 
-/** 
+/**
  * API Endpoint to create a new post draft
  * Expects a JSON payload matching the formSchema
  * Validates user authentication and slug uniqueness
@@ -21,7 +21,7 @@ export const POST: RequestHandler = async ({ request, setHeaders }) => {
 	}
 
 	// RBAC - Only Admins and Authors can create posts
-	if (session.user.role !== 'Admin' && session.user.role !== 'Author') {
+	if (session.user.role !== 'Admin' && session.user.role !== 'Creator') {
 		return error(403, 'FORBIDDEN');
 	}
 
@@ -29,14 +29,13 @@ export const POST: RequestHandler = async ({ request, setHeaders }) => {
 	const payload = await request.json();
 	const validated = formSchema.safeParse(payload);
 
-
 	// Returns a JSON response with 422 status code if not a valid input
 	if (!validated.success) {
 		return error(422, JSON.stringify({ fieldErrors: validated.error.flatten().fieldErrors }));
 	}
 
 	// TODO: Add contentJson to WYSIWYG Editor and destructure here
-	const { title, slug, excerpt, tags, contentHtml } = validated.data;
+	const { title, slug, excerpt, tags, contentHtml, contentJson } = validated.data;
 
 	// Validate slug is unique
 	const slugUniqueCheck = await slugUnique(slug);
@@ -62,11 +61,12 @@ export const POST: RequestHandler = async ({ request, setHeaders }) => {
 			contentHtml,
 			excerpt,
 			tags,
+			contentJson: JSON.parse(contentJson),
 			published: false,
 			userId: session?.user.id
 		});
 
-		await setCurrentRevision(post.id, post.revisions[post.revisions.length - 1].id)
+		await setCurrentRevision(post.id, post.revisions[post.revisions.length - 1].id);
 
 		const createPostResponseBody = {
 			message: 'New post draft successfully saved',
@@ -79,7 +79,10 @@ export const POST: RequestHandler = async ({ request, setHeaders }) => {
 
 		setHeaders({ Location: `localhost:5173/me/edit/${post.id}` });
 
-		return json(createPostResponseBody, { status: 201, headers: { Location: `localhost:5173/me/edit/${post.id}` } });
+		return json(createPostResponseBody, {
+			status: 201,
+			headers: { Location: `localhost:5173/me/edit/${post.id}` }
+		});
 	} catch (err) {
 		console.error('Unexpected error occurred during post creation', err);
 		const errorMessage = err instanceof Error ? err.message : String(err);
@@ -105,14 +108,17 @@ export const GET: RequestHandler = async ({ url }) => {
 		const posts = await getAllPublishedPosts(1000);
 		const paginatedPosts = posts.slice(start, start + limit);
 
-		return json({
-			page,
-			limit,
-			total: posts.length,
-			posts: paginatedPosts
-		}, { status: 200 });
+		return json(
+			{
+				page,
+				limit,
+				total: posts.length,
+				posts: paginatedPosts
+			},
+			{ status: 200 }
+		);
 	} catch (err) {
 		console.error('Error fetching posts:', err);
 		return error(500, 'Internal Server Error');
 	}
-}
+};

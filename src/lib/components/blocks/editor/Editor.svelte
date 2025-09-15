@@ -10,12 +10,12 @@
 	import js from 'highlight.js/lib/languages/javascript';
 	import ts from 'highlight.js/lib/languages/typescript';
 	import html from 'highlight.js/lib/languages/xml';
-	import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+	// import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 	import Image from '@tiptap/extension-image';
 	import Link from '@tiptap/extension-link';
-	import type { EditorTypes } from '$lib/types';
-	import HardBreak from '@tiptap/extension-hard-break';
 	import { getEditorState, setEditorState } from '../post-creation/state.svelte';
+	import { CustomCodeBlock } from './CustomCodeBlock';
+	import { getFullHTMLWithPreservedNewlines } from './GetHTML';
 
 	/** Properties **/
 	let {
@@ -50,7 +50,7 @@
 				extensions: [
 					StarterKit,
 					Image,
-					CodeBlockLowlight.configure({
+					CustomCodeBlock.configure({
 						lowlight
 					}),
 					Link.configure({
@@ -123,13 +123,13 @@
 				}
 			})
 		);
-		htmlContent = getEditorState()?.getHTML() ?? '';
+		htmlContent = getFullHTMLWithPreservedNewlines(getEditorState()) ?? '';
 		jsonContent = getEditorState()?.getJSON() ?? '';
 	});
 
 	/** Setting HTML & JSON Content */
 	function getElementContent() {
-		htmlContent = editor?.getHTML() ?? '';
+		htmlContent = getFullHTMLWithPreservedNewlines(getEditorState()) ?? '';
 		jsonContent = editor?.getJSON() ?? '';
 	}
 </script>

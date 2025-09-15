@@ -18,6 +18,9 @@
 		getSelectedImage,
 		getEditorState
 	} from './state.svelte';
+	import { getFullHTMLWithPreservedNewlines } from '../editor/GetHTML';
+
+	import SuperDebug from 'sveltekit-superforms';
 
 	/** Properties **/
 	let { data } = $props();
@@ -34,12 +37,14 @@
 	let errors = $derived(formCreate.errors);
 
 	function onSubmit() {
-		$formData.contentHtml = getEditorState()?.getHTML();
-		$formData.contentJson = getEditorState()?.getJSON();
+		$formData.contentHtml = getFullHTMLWithPreservedNewlines(getEditorState());
+		$formData.contentJson = JSON.stringify(getEditorState()?.getJSON());
 
 		console.log($formData);
 	}
 </script>
+
+<SuperDebug data={$formData} />
 
 <form
 	action="?/createPost"
@@ -150,7 +155,11 @@
 
 		<div class="flex w-full flex-row items-center justify-between">
 			<div class="mx-6 mt-6 flex w-[35%] flex-row justify-between gap-6">
-				<Form.Button class="h-fit w-[180px] text-2xl " formaction="?/createPost" type="submit" onclick={() => onSubmit()}>Submit</Form.Button
+				<Form.Button
+					class="h-fit w-[180px] text-2xl "
+					formaction="?/createPost"
+					type="submit"
+					onclick={() => onSubmit()}>Submit</Form.Button
 				>
 				<Button
 					type="submit"

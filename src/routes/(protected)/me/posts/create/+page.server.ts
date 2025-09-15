@@ -58,7 +58,7 @@ export const load: PageServerLoad = async ({ request }) => {
 
 	return {
 		form: await superValidate(zod4(formSchema)),
-		imageForm: await superValidate(zod4(imageUploadSchema)),
+		imageForm: await superValidate(zod4(imageUploadSchema))
 		// itemDB
 	};
 };
@@ -77,7 +77,7 @@ export const actions: Actions = {
 		// Get and validate form data:
 		const form = await superValidate(request, zod4(formSchema));
 
-		console.log(form.data)
+		console.log(form.data);
 
 		if (!form.valid) {
 			console.log(
@@ -98,7 +98,7 @@ export const actions: Actions = {
 		}
 
 		// Destructure form data to access submission data from user:
-		const { title, slug, contentHtml, excerpt, tags } = form.data;
+		const { title, slug, contentHtml, contentJson, excerpt, tags } = form.data;
 
 		// Review non-null fields for truthiness
 		if (!title || !slug || !contentHtml) {
@@ -147,7 +147,8 @@ export const actions: Actions = {
 					slug,
 					contentHtml,
 					excerpt,
-					tags
+					tags,
+					contentJson
 				})
 			});
 
@@ -160,7 +161,6 @@ export const actions: Actions = {
 			const responseData = await response.json();
 			console.log('Post created successfully:', responseData);
 			postId = responseData.post.id;
-
 		} catch (error) {
 			console.log('Unexpected error occurred during post creation', error);
 			return setError(form, 'Unexpected error');
@@ -186,9 +186,6 @@ export const actions: Actions = {
 			console.log('Unexpected error occurred during post submission', error);
 			return setError(form, 'Unexpected error');
 		}
-
-	
-	
 
 		// Attempt database record creation
 		// try {
@@ -374,7 +371,7 @@ export const actions: Actions = {
 		}
 
 		// Destructure form data to access submission data from user:
-		const { title, slug, contentHtml, excerpt, tags } = form.data;
+		const { title, slug, contentHtml, contentJson, excerpt, tags } = form.data;
 
 		// Review non-null fields for truthiness
 		if (!title || !slug || !contentHtml) {
@@ -421,7 +418,8 @@ export const actions: Actions = {
 					slug,
 					contentHtml,
 					excerpt,
-					tags
+					tags,
+					contentJson
 				})
 			});
 
@@ -437,8 +435,6 @@ export const actions: Actions = {
 			console.log('Unexpected error occurred during post creation', error);
 			return setError(form, 'Unexpected error');
 		}
-
-
 
 		// // Attempt database record creation
 		// try {
