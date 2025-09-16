@@ -15,18 +15,18 @@ export function createPostProcessor() {
 		unified()
 			// Input is trusted HTML from Tiptap renderer; we still parse+sanitize defensively
 			.use(rehypeParse, { fragment: true })
-			.use(rehypeSanitize, {
-				...defaultSchema,
-				tagNames: [
-					...(defaultSchema.tagNames || []),
-					'br' // ✅ explicitly allow <br>
-				],
-				attributes: {
-					...defaultSchema.attributes,
-					// You usually don’t need attributes for <br>, but you can add global ones if needed.
-					br: [...(defaultSchema.attributes?.br || []), ['className']]
-				}
-			})
+			// .use(rehypeSanitize, {
+			// 	...defaultSchema,
+			// 	tagNames: [
+			// 		...(defaultSchema.tagNames || []),
+			// 		'br' // ✅ explicitly allow <br>
+			// 	],
+			// 	attributes: {
+			// 		...defaultSchema.attributes,
+			// 		// You usually don’t need attributes for <br>, but you can add global ones if needed.
+			// 		br: [...(defaultSchema.attributes?.br || []), ['className']]
+			// 	}
+			// })
 			.use(rehypeSlug) // adds id attributes to headings
 			.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
 			.use(rehypeExternalLinks, { target: '_blank', rel: ['noopener', 'noreferrer'] })

@@ -30,6 +30,7 @@
 <PostHeader
 	title={posts[index].postTitle ?? 'Untitled Post'}
 	author={posts[index].User?.name ?? ''}
+	slug={posts[index].slug ?? ''}
 	date={posts[index].updatedAt ?? new Date(0)}
 	tags={posts[index].tags ?? []}
 />
