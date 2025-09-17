@@ -104,6 +104,10 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	const start = (page - 1) * limit;
 
+	BigInt.prototype.toJSON = function() {
+      return this.toString();
+    };
+
 	try {
 		const posts = await getAllPublishedPosts(1000);
 		const paginatedPosts = posts.slice(start, start + limit);

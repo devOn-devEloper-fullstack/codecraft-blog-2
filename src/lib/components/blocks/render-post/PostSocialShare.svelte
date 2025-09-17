@@ -7,7 +7,7 @@
     let { slug, title }: { slug: string, title: string } = $props();
 </script>
 
-<div class="flex flex-row gap-4 mt-4">
+<div class="flex flex-row gap-4 mt-4 border-r-2 border-gray-400 pr-4">
     <a
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent("http://localhost:5173/posts/"+slug)}`}
         target="_blank"

@@ -4,11 +4,12 @@
 	import { page } from '$app/state';
 	import PostHeader from '$lib/components/blocks/render-post/PostHeader.svelte';
 	import ContentContainer from '$lib/components/blocks/render-post/ContentContainer.svelte';
-	// import './parsed.css';
-	import type { Posts, User } from '@prisma/client';
+	import './parsed.css';
+	import type { Posts, User, PostStats } from '@prisma/client';
+	import PostSuggestions from '$lib/components/blocks/render-post/PostSuggestions.svelte';
 
 	/** Type Definitions */
-	type PostWithUser = Posts & { User: User | null };
+	type PostWithUser = Posts & { User: User | null, stats: PostStats | null };
 	type PostsAPIResponse = {
 		page: number;
 		limit: number;
@@ -22,7 +23,24 @@
 	/** State Declarations **/
 	let posts = $derived(data.posts.posts as Partial<PostWithUser>[] | []);
 
+
 	let index = $derived(posts.findIndex((post) => post.slug === page.params.slug));
+
+	const suggestions = $derived(
+		posts
+			.filter((_, i) => i !== index)
+			.sort(() => 0.5 - Math.random())
+			.slice(0, 3)
+			.map((post) => ({
+				title: post.postTitle ?? 'Untitled Post',
+				slug: post.slug ?? '',
+				excerpt: post.excerpt ?? ''
+			}))
+	);
+
+	let likeCount = $derived(posts[index].stats ? posts[index].stats.likeCount : 0);
+	let viewCount = $derived(posts[index].stats ? posts[index].stats.viewCount : 0);
+	let commentCount = $derived(posts[index].stats ? posts[index].stats.commentCount : 0);
 </script>
 
 <ViewBeacon endpoint={`/api/posts/${posts[index].id}/views`} />
@@ -32,7 +50,13 @@
 	author={posts[index].User?.name ?? ''}
 	slug={posts[index].slug ?? ''}
 	date={posts[index].updatedAt ?? new Date(0)}
-	tags={posts[index].tags ?? []}
-/>
+	tags={posts[index].tags ?? [] }
+	likes={likeCount}
+	views={viewCount}
+	comments={commentCount}
+	id={posts[index].id ?? ''}
+	/>
 
 <ContentContainer content={posts[index].contentHtml ?? ''} />
+
+<PostSuggestions suggestions={suggestions}/>

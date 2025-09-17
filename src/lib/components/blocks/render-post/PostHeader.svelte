@@ -5,11 +5,31 @@
 	import PostTags from '$lib/components/blocks/render-post/PostTags.svelte';
 	import { Avatar } from 'flowbite-svelte';
 	import PostSocialShare from './PostSocialShare.svelte';
-	import PostLikes from './PostLikes.svelte';
-	import LineVertical from 'phosphor-svelte/lib/LineVertical';
+	import PostVitals from './PostVitals.svelte';
 
 	/** Properties **/
-	let { title, author, slug, date, tags }: { title: string; author: string; slug: string; date: Date; tags: string[] } =
+	let { 
+		title, 
+		author, 
+		slug, 
+		date, 
+		tags, 
+		likes, 
+		views, 
+		comments,
+		id
+	}: 
+		{ 
+			title: string; 
+			author: string; 
+			slug: string; 
+			date: Date; 
+			tags: string[]; 
+			likes: bigint; 
+			views: bigint; 
+			comments: bigint;
+			id: string;
+		} =
 		$props();
 	
 	function getUserInitials(name: string): string {
@@ -29,10 +49,9 @@
 		<PostDate {date} />
 	</div>
 	<PostTags {tags} />
-	<div class="flex flex-row gap-2 items-center justify-center border border-black h-[32px]">
+	<div class="flex flex-row gap-3 items-center justify-center">
 		<PostSocialShare {slug} {title} />
-		<LineVertical size={32} class="text-gray-400" />
-		<PostLikes />
+		<PostVitals {likes} {views} {comments} {id}/>
 	</div>
 	
 </header>

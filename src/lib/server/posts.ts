@@ -169,6 +169,48 @@ export async function getAllPublishedPosts(limit = 10) {
 	return await prisma.posts.findMany({
 		where: { published: true },
 		take: limit,
-		include: { User: true, currentRevision: true }
+		include: { User: true, currentRevision: true, stats: true}
+	});
+}
+
+export async function likePost(postId: string, userId: string) {
+	const liked = await prisma.postLike.create({
+		data: {
+			postId,
+			userId
+		}
+	});
+
+	const postStat = await prisma.postStats.upsert({
+		where: { postId },
+		update: { likeCount: { increment: 1 } },
+		create: { postId, likeCount: 1, viewCount: 1 }
+	});
+
+	return { liked, postStat };
+}
+
+export async function unlikePost(postId: string, userId: string) {
+	const unliked = await prisma.postLike.deleteMany({
+		where: {
+			postId,
+			userId
+		}
+	});
+
+	const postStat = await prisma.postStats.update({
+		where: { postId },
+		data: { likeCount: { decrement: 1 } }
+	});
+
+	return { unliked, postStat };
+}
+
+export async function getPostLikeForUser(postId: string, userId: string) {
+	return await prisma.postLike.findFirst({
+		where: {
+			postId,
+			userId
+		}
 	});
 }
