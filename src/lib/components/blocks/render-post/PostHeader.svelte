@@ -39,7 +39,7 @@
 	}
 </script>
 
-<header class="relative mt-15 mb-10 flex h-fit w-[100vw] flex-col items-center gap-4">
+<header class="relative mt-22 mb-10 flex h-fit w-[100vw] flex-col items-center gap-4">
 	<PostTitle {title} />
 	<div class="flex flex-row gap-2 items-center">
 		<Avatar class="rounded-full border border-gray-500 px-2 py-2 ring-gray-500 dark:text-black w-[50px] h-[50px] mx-3"

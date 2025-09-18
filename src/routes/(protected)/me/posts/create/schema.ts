@@ -4,7 +4,7 @@ export const formSchema = z.object({
 	title: z.string().trim().min(2).max(200),
 	slug: z.string().min(2).lowercase(),
 	excerpt: z.string().min(2).max(250),
-	tags: z.string().array(),
+	tags: z.array(z.string()),
 	contentHtml: z.string().min(1),
 	contentJson: z.any()
 });

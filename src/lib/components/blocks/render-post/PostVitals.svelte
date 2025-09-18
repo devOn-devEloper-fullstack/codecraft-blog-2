@@ -3,6 +3,7 @@
     import Eye from 'phosphor-svelte/lib/Eye';
     import ChatCircle from 'phosphor-svelte/lib/ChatCircle';
 	import { onMount } from 'svelte';
+    import { getToastState } from '$lib/components/blocks/toast/toastState.svelte';
 
 
     let { likes = 0n, views = 0n, comments = 0n, id }: { likes: bigint, views: bigint, comments: bigint, id: string } = $props();
@@ -11,15 +12,24 @@
     
     let liked = $state(false);
 
-    function increment() {
+    let toastState = getToastState();
+
+    async function increment() {
         if (liked) return;
         likeCount += 1
         liked = true;
 
         try {
-            fetch(`/api/posts/${id}/likes`, {
+            const res = await fetch(`/api/posts/${id}/likes`, {
                 method: 'POST'
             });
+
+            if (res.ok) {
+                toastState.add('Post Liked!', 'You have liked this post.', 'success');
+            } else {
+                toastState.add('Error', 'Failed to like the post. Please try again.', 'error');
+                decrement();
+            }
         } catch (err) {
             console.error('Error liking the post:', err);
             decrement();
