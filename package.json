@@ -108,6 +108,7 @@
 		"flowbite-svelte-icons": "^2.3.0",
 		"formsnap": "^2.0.1",
 		"hast-util-sanitize": "^5.0.2",
+		"hast-util-to-html": "^9.0.5",
 		"highlight.js": "^11.11.1",
 		"highlightjs-svelte": "^1.0.6",
 		"lucide-svelte": "^0.540.0",
@@ -126,6 +127,7 @@
 		"ts-node": "^10.9.2",
 		"tsx": "^4.20.5",
 		"unified": "^11.0.5",
+		"unist-util-inspect": "^8.1.0",
 		"uuid": "^11.1.0"
 	}
 }
