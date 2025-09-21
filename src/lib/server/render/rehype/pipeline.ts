@@ -9,6 +9,9 @@ import rehypeStringify from 'rehype-stringify';
 import rehypeShiki from '@shikijs/rehype';
 // import { addClassesPlugin } from './plugins/addClasses';
 // import { defaultSchema } from 'hast-util-sanitize';
+import { rehypeSvelteShiki } from './plugins/rehypeSvelteShiki';
+
+const themes = { light: 'github-dark-default', dark: 'github-dark-default' };
 
 export function createPostProcessor() {
 	return (
@@ -16,9 +19,7 @@ export function createPostProcessor() {
 			// Input is trusted HTML from Tiptap renderer; we still parse+sanitize defensively
 			.use(rehypeParse, {
 				fragment: true,
-				allowDangerousHtml: true,
-				allowDangerousCharacters: true,
-				allowParseErrors: true
+				allowDangerousHtml: true
 			})
 			// .use(rehypeSanitize, {
 			// 	...defaultSchema,
@@ -59,9 +60,8 @@ export function createPostProcessor() {
 			// 		hr: 'prose-hr'
 			// 	}
 			// })
-			.use(rehypeShiki, {
-				theme: 'github-dark-default'
-			})
+			.use(rehypeSvelteShiki, { themes })
+			.use(rehypeShiki, { themes })
 			.use(rehypeStringify, { allowDangerousHtml: true })
 	);
 }

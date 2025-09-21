@@ -7,9 +7,10 @@
 	import './parsed.css';
 	import type { Posts, User, PostStats } from '@prisma/client';
 	import PostSuggestions from '$lib/components/blocks/render-post/PostSuggestions.svelte';
+	import CommentSection from '$lib/components/blocks/render-post/CommentSection.svelte';
 
 	/** Type Definitions */
-	type PostWithUser = Posts & { User: User | null, stats: PostStats | null };
+	type PostWithUser = Posts & { User: User | null; stats: PostStats | null };
 	type PostsAPIResponse = {
 		page: number;
 		limit: number;
@@ -22,7 +23,6 @@
 
 	/** State Declarations **/
 	let posts = $derived(data.posts.posts as Partial<PostWithUser>[] | []);
-
 
 	let index = $derived(posts.findIndex((post) => post.slug === page.params.slug));
 
@@ -50,13 +50,15 @@
 	author={posts[index].User?.name ?? ''}
 	slug={posts[index].slug ?? ''}
 	date={posts[index].updatedAt ?? new Date(0)}
-	tags={posts[index].tags ?? [] }
+	tags={posts[index].tags ?? []}
 	likes={likeCount}
 	views={viewCount}
 	comments={commentCount}
 	id={posts[index].id ?? ''}
-	/>
+/>
 
 <ContentContainer content={posts[index].contentHtml ?? ''} />
 
-<PostSuggestions suggestions={suggestions}/>
+<PostSuggestions {suggestions} />
+
+<CommentSection formLoadData={data.form} />

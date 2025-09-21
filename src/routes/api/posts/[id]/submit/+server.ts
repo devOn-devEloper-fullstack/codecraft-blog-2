@@ -46,8 +46,6 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		extensions: [StarterKit, CodeBlock, Link, Image]
 	});
 
-	console.log('Raw HTML:', rawHtml);
-
 	// Rehype Pipeline
 	const processor = createPostProcessor();
 	let processed: string;
@@ -60,8 +58,6 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			message: 'PreprocessingError: Failed to process HTML for styling'
 		});
 	}
-
-	console.log('Processed HTML:', processed);
 
 	try {
 		const submitted = await setPostStatus(post.id, 'SUBMITTED');
