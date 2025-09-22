@@ -21,6 +21,7 @@
 	/** Properties **/
 	let { data }: PageProps = $props();
 
+
 	/** State Declarations **/
 	let posts = $derived(data.posts.posts as Partial<PostWithUser>[] | []);
 
@@ -61,4 +62,4 @@
 
 <PostSuggestions {suggestions} />
 
-<CommentSection formLoadData={data.form} />
+<CommentSection formLoadData={data.form} userData={data.session?.user} />

@@ -31,3 +31,8 @@ export type EditorProps = {
 	htmlContent?: string | undefined;
 	jsonContent?: unknown;
 };
+
+/** Content Engagement (Posts, Likes, Comments) */
+export type CommentFormData = {
+		comment: string;
+	};

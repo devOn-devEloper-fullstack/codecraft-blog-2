@@ -14,3 +14,9 @@ export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
 export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, 'children'> : T;
 
 export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
+
+export function getUserInitials(name: string): string {
+		const names = name.split(' ');
+		if (names.length === 1) return names[0].charAt(0).toUpperCase();
+		return names[0].charAt(0).toUpperCase() + names[1].charAt(0).toUpperCase();
+	}

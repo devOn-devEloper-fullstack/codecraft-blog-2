@@ -5,8 +5,23 @@
 	import * as Form from '$lib/components/ui/form';
 	import { commentSchema } from '$lib/schemas/comment-schema';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
+	import type { SuperValidated } from 'sveltekit-superforms/client';
+	import type { User } from '@prisma/client';
+	import { getUserInitials } from '$lib/utils';
+	import type { CommentFormData } from '$lib/types';
 
-	let { formLoadData } = $props();
+	/** Properties */
+
+	let { 
+			formLoadData, 
+			userData 
+		}: 
+		{ 
+			formLoadData: SuperValidated<CommentFormData>; 
+			userData: Partial<User> | null 
+	} = $props();
+
+	let relativeDate = $derived(userData?.createdAt ? new Date(userData.createdAt).toLocaleString('default', {month: 'long', year: 'numeric'}) : new Date().toLocaleString('default', {month: 'long', year: 'numeric'}));
 
 	let superform = $derived(
 		superForm(formLoadData, {
@@ -21,15 +36,18 @@
 	let enhance = $derived(superform.enhance);
 </script>
 
+
+
 <!-- Refactor to CommentCard component -->
 <article
 	class="items-top flex w-full flex-row gap-4 border-b border-gray-200 p-4 dark:border-gray-700"
 >
-	<Avatar src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" />
+	<Avatar class="rounded-full border border-gray-500 px-2 py-2 ring-gray-500 dark:text-black w-[50px] h-[50px] mx-3"
+				>{userData ? getUserInitials(userData.name ?? 'U') : 'U'}</Avatar>
 	<div class="flex w-full flex-col gap-2">
 		<div class="flex flex-col">
-			<p class="text-sm font-semibold text-gray-900">User Name</p>
-			<p class="text-sm text-gray-600 dark:text-gray-400">Joined in August 2021</p>
+			<p class="text-sm font-semibold text-gray-900">{userData ? userData.name : 'Unknown User'}</p>
+			<p class="text-sm text-gray-600 dark:text-gray-400">Joined in {relativeDate}</p>
 		</div>
 		<form action="" use:enhance class="flex w-full flex-col gap-2">
 			<Form.Field name="comment" form={superform}>
