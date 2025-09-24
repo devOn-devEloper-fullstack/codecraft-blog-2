@@ -57,7 +57,7 @@
 			<p class="text-sm font-semibold text-gray-900">{userData ? userData.name : 'Unknown User'}</p>
 			<p class="text-sm text-gray-600 dark:text-gray-400">Joined in {relativeDate}</p>
 		</div>
-		<form class="flex w-full flex-col gap-2" onsubmit={() => onFormSubmit()} action="?/addComment" method="POST">
+		<form use:enhance class="flex w-full flex-col gap-2" onsubmit={() => onFormSubmit()} action="?/addComment" method="POST">
 			<Form.Field name="comment" form={superform}>
 				<Form.Control>
 					{#snippet children()}
