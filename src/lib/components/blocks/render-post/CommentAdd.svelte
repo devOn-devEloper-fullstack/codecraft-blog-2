@@ -6,19 +6,22 @@
 	import { commentSchema } from '$lib/schemas/comment-schema';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import type { SuperValidated } from 'sveltekit-superforms/client';
-	import type { User } from '@prisma/client';
+	import type { User, Posts } from '@prisma/client';
 	import { getUserInitials } from '$lib/utils';
 	import type { CommentFormData } from '$lib/types';
+	import SuperDebug from 'sveltekit-superforms'
 
 	/** Properties */
 
 	let { 
 			formLoadData, 
-			userData 
+			userData,
+			postData 
 		}: 
 		{ 
-			formLoadData: SuperValidated<CommentFormData>; 
-			userData: Partial<User> | null 
+			formLoadData: CommentFormData; 
+			userData: Partial<User> | null;
+			postData: Partial<Posts> | null
 	} = $props();
 
 	let relativeDate = $derived(userData?.createdAt ? new Date(userData.createdAt).toLocaleString('default', {month: 'long', year: 'numeric'}) : new Date().toLocaleString('default', {month: 'long', year: 'numeric'}));
@@ -34,6 +37,11 @@
 	let errors = $derived(superform.errors);
 	let submitting = $derived(superform.submitting);
 	let enhance = $derived(superform.enhance);
+
+	function onFormSubmit() {
+		$form.postId = postData?.id ?? '';
+	}
+
 </script>
 
 
@@ -49,7 +57,7 @@
 			<p class="text-sm font-semibold text-gray-900">{userData ? userData.name : 'Unknown User'}</p>
 			<p class="text-sm text-gray-600 dark:text-gray-400">Joined in {relativeDate}</p>
 		</div>
-		<form action="" use:enhance class="flex w-full flex-col gap-2">
+		<form class="flex w-full flex-col gap-2" onsubmit={() => onFormSubmit()} action="?/addComment" method="POST">
 			<Form.Field name="comment" form={superform}>
 				<Form.Control>
 					{#snippet children()}
@@ -64,9 +72,11 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
+			<Input type="text" name="postId" value={postData?.id ?? ''} hidden />
 			<Form.Button
 				type="submit"
 				disabled={$submitting}
+				formaction="?/addComment"
 				class="w-fit rounded-md bg-[var(--primary)] px-4 py-2 text-white hover:bg-[var(--primary-500)]"
 				>{$submitting ? 'Submitting...' : 'Submit'}</Form.Button
 			>

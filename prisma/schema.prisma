@@ -24,6 +24,7 @@ model User {
   sessions      Session[]
   settings      UserSettings?
   likes         PostLike[]
+  comments      Comment[]
 }
 
 model Session {
@@ -286,7 +287,7 @@ model Comment {
   id        String        @id @default(cuid())
   postId    String        @db.Uuid
   parentId  String?
-  userId    String
+  userId    String        @db.Uuid
   body      String        @db.Text
   status    CommentStatus @default(PUBLISHED)
   createdAt DateTime      @default(now())
@@ -297,6 +298,7 @@ model Comment {
   rootId String? // id of top-level comment; equals id for roots
 
   post Posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([postId, createdAt])
   @@index([rootId, createdAt])

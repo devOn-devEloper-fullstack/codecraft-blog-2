@@ -35,4 +35,5 @@ export type EditorProps = {
 /** Content Engagement (Posts, Likes, Comments) */
 export type CommentFormData = {
 		comment: string;
+		postId: string;
 	};

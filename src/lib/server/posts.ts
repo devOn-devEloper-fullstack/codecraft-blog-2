@@ -169,7 +169,7 @@ export async function getAllPublishedPosts(limit = 10) {
 	return await prisma.posts.findMany({
 		where: { published: true },
 		take: limit,
-		include: { User: true, currentRevision: true, stats: true}
+		include: { User: true, currentRevision: true, stats: true, comments: { include: { user: true } } },
 	});
 }
 
@@ -213,4 +213,21 @@ export async function getPostLikeForUser(postId: string, userId: string) {
 			userId
 		}
 	});
+}
+
+export async function addCommentToPost(postId: string, userId: string, comment: string) { 
+	const createdComment = await prisma.comment.create({
+		data: {
+			postId,
+			userId,
+			body: comment
+		},})
+	
+	const stats = await prisma.postStats.upsert({
+		where: { postId },
+		update: { commentCount: { increment: 1 } },
+		create: { postId, likeCount: 0, viewCount: 0, commentCount: 1 }
+	});
+
+	return { createdComment, stats };
 }

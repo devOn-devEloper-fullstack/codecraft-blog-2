@@ -82,7 +82,9 @@
     <span class="text-lg text-gray-700">{views} Views</span>
 </div>
 
-<div class="flex items-center gap-2 mt-4">
-    <ChatCircle size={32} class="text-gray-700"/>
-    <span class="text-lg text-gray-700">{comments} Comments</span>
-</div>
+<a href="#comments">
+    <div class="flex items-center gap-2 mt-4">
+        <ChatCircle size={32} class="text-gray-700"/>
+        <span class="text-lg text-gray-700">{comments} Comments</span>
+    </div>
+</a>

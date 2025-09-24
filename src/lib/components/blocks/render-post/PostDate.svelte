@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { cn } from '$lib/utils';
 
-	let { date }: { date: Date } = $props();
+	let { date, className }: { date: Date; className?: string } = $props();
 
 	let relativeTime = $state('');
 	let interval: NodeJS.Timeout;
 
-	function getRelativeTime(d) {
+	function getRelativeTime(d: Date) {
 		const now = new Date();
 		const target = new Date(d);
 		const diff = Math.floor((now.getTime() - target.getTime()) / 1000); // seconds
@@ -47,4 +48,4 @@
 	});
 </script>
 
-<span class="text-md font-semibold text-gray-400 uppercase">{relativeTime}</span>
+<span class={cn("text-md font-semibold text-gray-400 uppercase", className)}>{relativeTime}</span>

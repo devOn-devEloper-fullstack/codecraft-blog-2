@@ -62,4 +62,4 @@
 
 <PostSuggestions {suggestions} />
 
-<CommentSection formLoadData={data.form} userData={data.session?.user} />
+<CommentSection formLoadData={data.form} userData={data.session?.user} postData={posts[index]} />
