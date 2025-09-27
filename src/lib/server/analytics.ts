@@ -43,3 +43,5 @@ export async function totalLikesByDate() {
 	});
 	return likesByDate;
 }
+
+export type TotalPostLikesByDate = Awaited<ReturnType<typeof totalLikesByDate>>;
